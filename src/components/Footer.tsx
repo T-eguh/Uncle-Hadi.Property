@@ -158,8 +158,6 @@ export default function Footer({ setActiveTab, onOpenConsultation }: FooterProps
             <button onClick={() => handleNavClick('tentang-saya')} className="hover:text-[#D4A017] transition">Profil Hadi</button>
             <span>•</span>
             <button onClick={onOpenConsultation} className="hover:text-[#D4A017] transition">Konsultasi Gratis</button>
-            <span>•</span>
-            <button onClick={() => handleNavClick('admin')} className="hover:text-[#D4A017] transition font-semibold">Portal Admin</button>
           </div>
         </div>
       </div>

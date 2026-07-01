@@ -18,7 +18,18 @@ export default function App() {
   const [isConsultationOpen, setIsConsultationOpen] = useState(false);
   const [properties, setProperties] = useState<Property[]>([]);
   const [settings, setSettings] = useState({
-    founderPhotoUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=350&h=350&q=80"
+    founderPhotoUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=350&h=350&q=80",
+    founderName: "Hadi Sukmono",
+    founderTitle: "Founder & Agen Property Utama",
+    founderBrand: "Uncle Hadi.Property – Teman Cari Property",
+    aboutHeading: "Halo, Saya Hadi Sukmono. Selamat Datang di Uncle Hadi.Property",
+    aboutText1: "Saya adalah agen property yang berfokus membantu masyarakat menemukan rumah, apartemen, ruko, dan investasi properti yang sesuai kebutuhan Anda di Bekasi, Jakarta Timur, Cikarang, dan sekitarnya.",
+    aboutQuote: '"Saya percaya bahwa membeli atau menjual properti adalah salah satu keputusan terbesar dalam hidup yang membutuhkan informasi yang jelas, jujur, dan pendampingan yang tepat."',
+    aboutText2: "Melalui website ini, saya berbagi informasi property yang transparan, artikel edukasi yang mudah dipahami, serta layanan pemasaran properti digital premium bagi pemilik yang ingin menjual atau menyewakan asetnya secara cepat.",
+    heroTitle: "Membantu Menemukan Property yang Tepat untuk Investasi dan Hunian",
+    heroSubtitle: "Saya membantu calon pembeli, penjual, dan investor property mendapatkan informasi yang jelas, transparan, dan terpercaya untuk wilayah Bekasi, Jakarta Timur, Cikarang, dan sekitarnya.",
+    heroBgImage: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1920&q=80",
+    whatsAppNo: "6281234567890"
   });
 
   // Admin Login Modal States
@@ -124,10 +135,14 @@ export default function App() {
   };
 
   // Return the Admin Dashboard in absolute full screen (no regular header/footer)
-  if (activeTab === 'admin') {
+  if (window.location.pathname === '/admin' || activeTab === 'admin') {
     return (
       <AdminDashboard 
-        onBackToWebsite={() => setActiveTab('beranda')} 
+        onBackToWebsite={() => {
+          window.history.pushState({}, '', '/');
+          setActiveTab('beranda');
+          window.location.reload();
+        }} 
         onRefreshProperties={fetchProperties} 
         onRefreshSettings={fetchSettings}
       />
@@ -151,14 +166,14 @@ export default function App() {
             onNavigateToTab={setActiveTab} 
             onOpenConsultation={handleOpenConsultation} 
             properties={properties}
-            founderPhotoUrl={settings.founderPhotoUrl}
+            settings={settings}
           />
         )}
         {activeTab === 'tentang-saya' && (
           <TentangSaya 
             onNavigateToTab={setActiveTab} 
             onOpenConsultation={handleOpenConsultation} 
-            founderPhotoUrl={settings.founderPhotoUrl}
+            settings={settings}
           />
         )}
         {activeTab === 'property' && (

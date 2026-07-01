@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Building, Sparkles, PhoneCall, CheckCircle, ArrowRight, BedDouble, Bath, Square, Navigation, ShieldCheck, MapPin, Star, HeartHandshake, HelpCircle } from 'lucide-react';
 import { PROPERTIES_DATA, ARTICLES_DATA, TESTIMONIALS_DATA } from '../data';
 import { Property } from '../types';
@@ -7,27 +7,58 @@ interface BerandaProps {
   onNavigateToTab: (tabId: string) => void;
   onOpenConsultation: () => void;
   properties?: Property[];
-  founderPhotoUrl?: string;
+  settings?: any;
 }
 
-export default function Beranda({ onNavigateToTab, onOpenConsultation, properties, founderPhotoUrl }: BerandaProps) {
+export default function Beranda({ onNavigateToTab, onOpenConsultation, properties, settings }: BerandaProps) {
   // Fallback for founder photo
   const defaultPhoto = "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=350&h=350&q=80";
-  const finalFounderPhoto = founderPhotoUrl || defaultPhoto;
+  const finalFounderPhoto = settings?.founderPhotoUrl || defaultPhoto;
   // Use dynamic properties if passed, otherwise fall back to static PROPERTIES_DATA
   const featuredProperties = (properties && properties.length > 0) ? properties.slice(0, 6) : PROPERTIES_DATA.slice(0, 6);
   // Use the first 3 articles as featured articles
   const featuredArticles = ARTICLES_DATA.slice(0, 3);
 
+  const phone = settings?.whatsAppNo || "6281234567890";
+
+  // Slider implementation
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const slides = [
+    {
+      title: settings?.heroTitle || "Membantu Menemukan Property yang Tepat untuk Investasi dan Hunian",
+      subtitle: settings?.heroSubtitle || "Saya membantu calon pembeli, penjual, dan investor property mendapatkan informasi yang jelas, transparan, dan terpercaya untuk wilayah Bekasi, Jakarta Timur, Cikarang, dan sekitarnya.",
+      image: settings?.heroBgImage || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1920&q=80",
+      badge: settings?.founderBrand || "Uncle Hadi.Property – Teman Cari Property"
+    },
+    {
+      title: "Konsultasi Properti Jujur, Amanah & Pendampingan Sepenuh Hati",
+      subtitle: "Dapatkan solusi hunian ideal, ruko produktif, atau investasi tanah dengan bimbingan hukum yang aman, jujur, transparan, serta didampingi penuh hingga selesai akad.",
+      image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80",
+      badge: "Layanan Konsultasi Amanah & Berlisensi"
+    },
+    {
+      title: "Pasarkan Properti Anda Lebih Cepat dengan Strategi Digital Modern",
+      subtitle: "Layanan titip jual atau sewa properti premium untuk menjangkau ribuan calon pembeli potensial secara tertarget di wilayah Bekasi, Cikarang, dan Jakarta Timur.",
+      image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1920&q=80",
+      badge: "Jasa Pemasaran & Titip Jual Digital Premium"
+    }
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [slides.length]);
+
   const handleWhatsAppContact = (prop: Property, e: React.MouseEvent) => {
     e.stopPropagation();
-    const phone = "6281234567890"; // WhatsApp Uncle Hadi
     const encodedText = encodeURIComponent(prop.whatsappMessage);
     window.open(`https://wa.me/${phone}?text=${encodedText}`, '_blank');
   };
 
   const handleConsultationWhatsApp = () => {
-    const phone = "6281234567890";
     const text = encodeURIComponent("Halo Uncle Hadi, saya ingin melakukan konsultasi gratis mengenai property.");
     window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
   };
@@ -35,36 +66,47 @@ export default function Beranda({ onNavigateToTab, onOpenConsultation, propertie
   return (
     <div id="beranda-container" className="bg-[#FFFFFF] text-[#0F172A] overflow-x-hidden">
       
-      {/* SECTION 1 — Hero Banner */}
+      {/* SECTION 1 — Hero Banner with 3 Rotating Slides */}
       <section 
-        className="relative min-h-[85vh] flex items-center justify-center bg-cover bg-center py-24 px-4 sm:px-6 lg:px-8 border-b-4 border-[#D4A017]"
-        style={{ 
-          backgroundImage: `linear-gradient(to right, rgba(15, 23, 42, 0.93) 40%, rgba(15, 23, 42, 0.4) 100%), url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1920&q=80')` 
-        }}
+        className="relative min-h-[85vh] flex items-center justify-start py-20 px-4 sm:px-6 lg:px-8 border-b-4 border-[#D4A017] overflow-hidden"
         id="hero-section"
       >
-        <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
+        {/* Background Slides with smooth cross-fade */}
+        {slides.map((slide, index) => (
+          <div
+            key={index}
+            className={`absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-in-out ${
+              currentSlide === index ? 'opacity-100 scale-100' : 'opacity-0 scale-105 pointer-events-none'
+            }`}
+            style={{ 
+              backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.55)), url('${slide.image}')` 
+            }}
+          />
+        ))}
+
+        <div className="max-w-7xl mx-auto w-full relative z-10 py-8">
           
-          {/* Hero left details */}
-          <div className="lg:col-span-7 space-y-8 text-left text-white" id="hero-left-content">
-            <div className="inline-flex items-center gap-2 bg-[#D4A017]/20 border border-[#D4A017]/40 text-[#D4A017] px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider animate-pulse">
+          {/* Hero left details integrated directly on the sliding background */}
+          <div key={currentSlide} className="max-w-2xl space-y-6 text-left transition-all duration-500 transform translate-y-0" id="hero-left-content">
+            
+            <div className="inline-flex items-center gap-2 bg-[#D4A017]/25 border border-[#D4A017]/50 text-[#F5C242] px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider">
               <Sparkles className="h-4 w-4" />
-              Uncle Hadi.Property – Teman Cari Property
+              {slides[currentSlide].badge}
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight" id="hero-headline">
-              Membantu Menemukan <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4A017] to-[#F1C40F]">Property yang Tepat</span> untuk Investasi dan Hunian
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight text-white drop-shadow-md" id="hero-headline">
+              {slides[currentSlide].title}
             </h1>
 
-            <p className="text-sm sm:text-base text-gray-300 max-w-xl leading-relaxed" id="hero-subheadline">
-              Saya membantu calon pembeli, penjual, dan investor property mendapatkan informasi yang jelas, transparan, dan terpercaya untuk wilayah Bekasi, Jakarta Timur, Cikarang, dan sekitarnya.
+            <p className="text-sm sm:text-base text-gray-200 font-medium leading-relaxed drop-shadow-xs" id="hero-subheadline">
+              {slides[currentSlide].subtitle}
             </p>
 
             {/* CTA buttons */}
-            <div className="flex flex-wrap gap-4 pt-4" id="hero-cta-buttons">
+            <div className="flex flex-wrap gap-4 pt-2" id="hero-cta-buttons">
               <button
                 onClick={() => onNavigateToTab('properti')}
-                className="bg-[#D4A017] hover:bg-[#C29014] text-[#0F172A] font-extrabold text-sm px-8 py-4 rounded-xl transition-all duration-300 shadow-lg transform hover:-translate-y-1 flex items-center gap-2"
+                className="bg-[#D4A017] hover:bg-[#B38410] text-white font-extrabold text-sm px-6 py-3.5 rounded-xl transition-all duration-300 shadow-md transform hover:-translate-y-0.5 flex items-center gap-2 cursor-pointer"
                 id="hero-btn-properties"
               >
                 Lihat Property
@@ -73,7 +115,7 @@ export default function Beranda({ onNavigateToTab, onOpenConsultation, propertie
               
               <button
                 onClick={onOpenConsultation}
-                className="bg-[#1E293B] hover:bg-[#2D3748] border border-gray-600 text-white font-bold text-sm px-6 py-4 rounded-xl transition duration-300 shadow flex items-center gap-2"
+                className="bg-white/10 hover:bg-white/20 border border-white/25 text-white font-bold text-sm px-6 py-3.5 rounded-xl transition duration-300 shadow flex items-center gap-2 cursor-pointer"
                 id="hero-btn-consultation"
               >
                 <PhoneCall className="h-4 w-4 text-[#D4A017]" />
@@ -82,7 +124,7 @@ export default function Beranda({ onNavigateToTab, onOpenConsultation, propertie
 
               <button
                 onClick={() => onNavigateToTab('titip-jual')}
-                className="bg-transparent hover:bg-white/5 border-2 border-dashed border-[#D4A017] text-[#D4A017] font-semibold text-sm px-6 py-4 rounded-xl transition duration-300 flex items-center gap-2"
+                className="bg-transparent hover:bg-white/10 border-2 border-dashed border-[#D4A017] text-[#D4A017] hover:text-white font-bold text-sm px-6 py-3.5 rounded-xl transition duration-300 flex items-center gap-2 cursor-pointer"
                 id="hero-btn-titip"
               >
                 Titip Jual Property
@@ -90,28 +132,43 @@ export default function Beranda({ onNavigateToTab, onOpenConsultation, propertie
             </div>
           </div>
 
-          {/* Hero right floating card - premium trust message */}
-          <div className="lg:col-span-5 hidden lg:block" id="hero-right-badge">
-            <div className="bg-[#1E293B]/80 backdrop-blur-md p-6 rounded-3xl border border-white/10 shadow-2xl space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-[#D4A017]/20 rounded-xl flex items-center justify-center border border-[#D4A017]/40 text-[#D4A017]">
-                  <ShieldCheck className="h-6 w-6" />
-                </div>
-                <div>
-                  <h4 className="font-extrabold text-sm text-white">Layanan Broker Berlisensi</h4>
-                  <p className="text-3xs text-gray-400">Terpercaya & Berstandar Nasional</p>
-                </div>
-              </div>
-              <p className="text-xs text-gray-300 leading-relaxed">
-                "Membeli atau menjual property adalah keputusan besar. Di Uncle Hadi.Property, kami melayani dengan kejujuran mutlak dan analisis data pasar real-time."
-              </p>
-              <div className="pt-2 border-t border-white/5 flex items-center justify-between text-2xs text-gray-400 font-semibold">
-                <span>📍 Bekasi - Jakarta Timur</span>
-                <span className="text-[#D4A017]">★ Sertifikat AREBI</span>
-              </div>
-            </div>
+        </div>
+
+        {/* Carousel controls & dots */}
+        <div className="absolute bottom-8 left-4 sm:left-6 lg:left-8 z-20 flex items-center gap-6 bg-slate-900/60 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-slate-700/50 shadow-lg text-white" id="carousel-controls">
+          <div className="flex gap-2">
+            {slides.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentSlide(idx)}
+                className={`h-2.5 rounded-full transition-all duration-300 ${
+                  currentSlide === idx ? 'w-8 bg-[#D4A017]' : 'w-2.5 bg-gray-400 hover:bg-gray-600'
+                } cursor-pointer`}
+                aria-label={`Slide ${idx + 1}`}
+              />
+            ))}
           </div>
 
+          <div className="flex gap-2 border-l border-slate-700 pl-4">
+            <button
+              onClick={() => setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1))}
+              className="p-1.5 rounded-full bg-slate-800 hover:bg-[#D4A017] text-white shadow-xs border border-slate-700 transition cursor-pointer"
+              title="Slide Sebelumnya"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setCurrentSlide((prev) => (prev + 1) % slides.length)}
+              className="p-1.5 rounded-full bg-slate-800 hover:bg-[#D4A017] text-white shadow-xs border border-slate-700 transition cursor-pointer"
+              title="Slide Berikutnya"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
         </div>
       </section>
 
@@ -131,7 +188,7 @@ export default function Beranda({ onNavigateToTab, onOpenConsultation, propertie
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Pillar 1 */}
             <div className="bg-[#F8FAFC] rounded-2xl p-8 border border-gray-100 shadow-xs hover:shadow-md transition duration-300 space-y-4">
               <div className="w-14 h-14 bg-[#D4A017]/10 text-[#AA7C11] rounded-2xl flex items-center justify-center border border-[#D4A017]/30">
@@ -162,6 +219,17 @@ export default function Beranda({ onNavigateToTab, onOpenConsultation, propertie
               <h3 className="text-lg font-black text-[#0F172A]">Pendampingan</h3>
               <p className="text-xs text-gray-500 leading-relaxed">
                 Mulai dari pencarian awal unit, negosiasi langsung ke pemilik, survey, pengurusan legalitas di notaris, hingga persetujuan KPR bank, Anda didampingi sepenuhnya.
+              </p>
+            </div>
+
+            {/* Pillar 4 */}
+            <div className="bg-[#F8FAFC] rounded-2xl p-8 border border-gray-100 shadow-xs hover:shadow-md transition duration-300 space-y-4">
+              <div className="w-14 h-14 bg-[#D4A017]/10 text-[#AA7C11] rounded-2xl flex items-center justify-center border border-[#D4A017]/30">
+                <ShieldCheck className="h-7 w-7" />
+              </div>
+              <h3 className="text-lg font-black text-[#0F172A]">Lisensi AREBI</h3>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                Kami adalah agen properti berlisensi tersertifikasi AREBI, menjamin kejujuran mutlak, keamanan transaksi hukum, serta analisis data pasar real-time untuk keputusan terbaik Anda.
               </p>
             </div>
           </div>
@@ -347,8 +415,8 @@ export default function Beranda({ onNavigateToTab, onOpenConsultation, propertie
                     className="rounded-2xl object-cover h-72 w-full shadow-inner"
                   />
                   <div className="text-center pt-4">
-                    <p className="text-sm font-black text-[#0F172A]">Hadi</p>
-                    <p className="text-3xs font-bold text-[#D4A017] uppercase tracking-wider">Agen Property Teman Anda</p>
+                    <p className="text-sm font-black text-[#0F172A]">{settings?.founderName || "Hadi Sukmono"}</p>
+                    <p className="text-3xs font-bold text-[#D4A017] uppercase tracking-wider">{settings?.founderTitle || "Founder & Agen Property Utama"}</p>
                   </div>
                 </div>
               </div>
@@ -357,7 +425,7 @@ export default function Beranda({ onNavigateToTab, onOpenConsultation, propertie
             {/* Right details */}
             <div className="lg:col-span-7 space-y-6" id="brief-bio">
               <span className="text-[#D4A017] text-xs font-bold uppercase tracking-wider bg-[#D4A017]/10 px-3.5 py-1.5 rounded-full">
-                Halo, Saya Hadi
+                Halo, Saya {settings?.founderName || "Hadi Sukmono"}
               </span>
               
               <h2 className="text-3xl font-black text-[#0F172A] leading-tight">

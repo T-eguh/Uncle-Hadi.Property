@@ -39,6 +39,17 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
   
   // Founder Settings States
   const [founderPhotoUrl, setFounderPhotoUrl] = useState('');
+  const [founderName, setFounderName] = useState('');
+  const [founderTitle, setFounderTitle] = useState('');
+  const [founderBrand, setFounderBrand] = useState('');
+  const [aboutHeading, setAboutHeading] = useState('');
+  const [aboutText1, setAboutText1] = useState('');
+  const [aboutQuote, setAboutQuote] = useState('');
+  const [aboutText2, setAboutText2] = useState('');
+  const [heroTitle, setHeroTitle] = useState('');
+  const [heroSubtitle, setHeroSubtitle] = useState('');
+  const [heroBgImage, setHeroBgImage] = useState('');
+  const [whatsAppNo, setWhatsAppNo] = useState('');
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [settingsError, setSettingsError] = useState('');
   const [settingsSuccess, setSettingsSuccess] = useState('');
@@ -102,6 +113,17 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
       if (settingsRes.ok) {
         const settingsData = await settingsRes.json();
         setFounderPhotoUrl(settingsData.founderPhotoUrl || '');
+        setFounderName(settingsData.founderName || 'Hadi Sukmono');
+        setFounderTitle(settingsData.founderTitle || 'Founder & Agen Property Utama');
+        setFounderBrand(settingsData.founderBrand || 'Uncle Hadi.Property – Teman Cari Property');
+        setAboutHeading(settingsData.aboutHeading || 'Halo, Saya Hadi Sukmono. Selamat Datang di Uncle Hadi.Property');
+        setAboutText1(settingsData.aboutText1 || 'Saya adalah agen property yang berfokus membantu masyarakat menemukan rumah, apartemen, ruko, dan investasi properti yang sesuai kebutuhan Anda di Bekasi, Jakarta Timur, Cikarang, dan sekitarnya.');
+        setAboutQuote(settingsData.aboutQuote || '"Saya percaya bahwa membeli atau menjual properti adalah salah satu keputusan terbesar dalam hidup yang membutuhkan informasi yang jelas, jujur, dan pendampingan yang tepat."');
+        setAboutText2(settingsData.aboutText2 || 'Melalui website ini, saya berbagi informasi property yang transparan, artikel edukasi yang mudah dipahami, serta layanan pemasaran properti digital premium bagi pemilik yang ingin menjual atau menyewakan asetnya secara cepat.');
+        setHeroTitle(settingsData.heroTitle || 'Membantu Menemukan Property yang Tepat untuk Investasi dan Hunian');
+        setHeroSubtitle(settingsData.heroSubtitle || 'Saya membantu calon pembeli, penjual, dan investor property mendapatkan informasi yang jelas, transparan, dan terpercaya untuk wilayah Bekasi, Jakarta Timur, Cikarang, dan sekitarnya.');
+        setHeroBgImage(settingsData.heroBgImage || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1920&q=80');
+        setWhatsAppNo(settingsData.whatsAppNo || '6281234567890');
       }
     } catch (err) {
       console.error('Error fetching admin data:', err);
@@ -262,6 +284,56 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
     reader.readAsDataURL(file);
   };
 
+  // Handle Hero bg upload
+  const handleHeroBgUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+
+    if (!file.type.startsWith('image/')) {
+      setSettingsError('File harus berupa format gambar!');
+      return;
+    }
+
+    setUploadFounderLoading(true);
+    setSettingsError('');
+    setSettingsSuccess('');
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64Data = reader.result as string;
+      try {
+        const res = await fetch('/api/admin/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({
+            filename: file.name,
+            base64Data
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          setHeroBgImage(data.imageUrl);
+          setSettingsSuccess('Foto background hero berhasil diunggah! Klik "Simpan Perubahan" untuk menerapkan secara permanen.');
+        } else {
+          setSettingsError(data.error || 'Gagal mengunggah foto hero.');
+        }
+      } catch (err) {
+        setSettingsError('Kesalahan jaringan saat mengunggah foto.');
+      } finally {
+        setUploadFounderLoading(false);
+      }
+    };
+    reader.onerror = () => {
+      setSettingsError('Gagal membaca file gambar.');
+      setUploadFounderLoading(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
   // Save founder photo to server settings
   const handleSaveFounderSettings = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -277,13 +349,24 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
           'Authorization': `Bearer ${authToken}`
         },
         body: JSON.stringify({
-          founderPhotoUrl
+          founderPhotoUrl,
+          founderName,
+          founderTitle,
+          founderBrand,
+          aboutHeading,
+          aboutText1,
+          aboutQuote,
+          aboutText2,
+          heroTitle,
+          heroSubtitle,
+          heroBgImage,
+          whatsAppNo
         })
       });
 
       const data = await res.json();
       if (res.ok && data.success) {
-        setSettingsSuccess('Foto founder berhasil disimpan dan langsung diperbarui di seluruh website!');
+        setSettingsSuccess('Pengaturan website berhasil disimpan dan langsung diperbarui di seluruh website!');
         if (onRefreshSettings) {
           onRefreshSettings();
         }
@@ -934,12 +1017,12 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
           {activeSubTab === 'founder' && (
             <div className="space-y-6 max-w-4xl">
               <div>
-                <h1 className="text-2xl font-black text-[#0F172A] tracking-tight">Profil & Foto Founder</h1>
-                <p className="text-xs text-gray-500">Kelola foto profil Uncle Hadi yang ditampilkan pada halaman utama (Beranda) dan halaman "Tentang Saya" secara real-time.</p>
+                <h1 className="text-2xl font-black text-[#0F172A] tracking-tight">Pengaturan & Konten Website</h1>
+                <p className="text-xs text-gray-500">Kelola foto, profil founder, slogan, nomor WhatsApp, serta gambar dan teks utama yang ditampilkan di seluruh website secara instan.</p>
               </div>
 
               <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-md border border-gray-100">
-                <form onSubmit={handleSaveFounderSettings} className="space-y-6">
+                <form onSubmit={handleSaveFounderSettings} className="space-y-8">
                   {settingsError && (
                     <div className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-xl text-xs flex items-start gap-2.5">
                       <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
@@ -954,65 +1037,216 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
-                    {/* Live Preview Column */}
-                    <div className="md:col-span-4 flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border border-gray-100 text-center">
-                      <span className="text-3xs font-extrabold text-gray-400 uppercase tracking-widest mb-4">Pratinjau Live</span>
-                      
-                      <div className="w-40 h-40 rounded-full border-4 border-[#D4A017] overflow-hidden shadow-md mb-3 bg-slate-200 relative">
-                        {founderPhotoUrl ? (
-                          <img 
-                            src={founderPhotoUrl} 
-                            alt="Pratinjau Foto Founder" 
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-400">
-                            <User className="h-12 w-12" />
-                          </div>
-                        )}
-                        {uploadFounderLoading && (
-                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white">
-                            <span className="text-2xs font-bold">Mengunggah...</span>
-                          </div>
-                        )}
+                  {/* 1. SEKSI HERO BANNER */}
+                  <div className="space-y-4 border-b border-gray-100 pb-6">
+                    <h3 className="text-sm font-black text-[#0F172A] border-l-4 border-[#D4A017] pl-3">1. Konfigurasi Hero Banner</h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Judul Utama Hero (Hero Title)</label>
+                        <input
+                          type="text"
+                          value={heroTitle}
+                          onChange={(e) => setHeroTitle(e.target.value)}
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        />
                       </div>
-                      <span className="text-3xs text-gray-400 italic">Pratinjau foto profil founder</span>
+
+                      <div>
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Slogan Merek (Brand Slogan)</label>
+                        <input
+                          type="text"
+                          value={founderBrand}
+                          onChange={(e) => setFounderBrand(e.target.value)}
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        />
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Sub-judul Hero (Hero Subtitle)</label>
+                        <textarea
+                          rows={2}
+                          value={heroSubtitle}
+                          onChange={(e) => setHeroSubtitle(e.target.value)}
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        />
+                      </div>
                     </div>
 
-                    {/* Inputs and Controls Column */}
-                    <div className="md:col-span-8 space-y-6">
-                      {/* File Upload Area */}
-                      <div>
-                        <label className="block text-2xs font-extrabold text-slate-500 uppercase tracking-widest mb-2.5">Unggah Foto Baru</label>
-                        <div className="border-2 border-dashed border-gray-200 hover:border-[#D4A017] rounded-2xl p-6 text-center cursor-pointer relative transition bg-slate-50/50 group">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleFounderPhotoUpload}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                          />
-                          <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2 group-hover:text-[#D4A017] transition-colors" />
-                          <p className="text-xs font-bold text-slate-700 group-hover:text-[#D4A017] transition-colors">
-                            Klik atau seret file gambar ke sini
-                          </p>
-                          <p className="text-4xs text-gray-400 mt-1 uppercase tracking-wider">
-                            PNG, JPG, ATAU JPEG (Maks. 5MB)
-                          </p>
+                    {/* Hero Background Image Upload & Preview */}
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center pt-2">
+                      <div className="md:col-span-4 flex flex-col items-center justify-center p-3 bg-slate-50 rounded-2xl border border-gray-100 text-center">
+                        <span className="text-4xs font-extrabold text-gray-400 uppercase tracking-widest mb-2">Pratinjau Background Hero</span>
+                        <div className="w-full h-24 rounded-xl overflow-hidden shadow-inner bg-slate-200 relative border border-gray-200">
+                          {heroBgImage ? (
+                            <img src={heroBgImage} alt="Hero Background" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400 text-3xs">Kosong</div>
+                          )}
                         </div>
                       </div>
 
-                      {/* URL Field input */}
+                      <div className="md:col-span-8 space-y-3">
+                        <div>
+                          <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1">Unggah Foto Background Hero Baru</label>
+                          <div className="border border-dashed border-gray-200 hover:border-[#D4A017] rounded-xl p-3 text-center cursor-pointer relative transition bg-slate-50/50 group">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleHeroBgUpload}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            />
+                            <p className="text-3xs font-bold text-slate-700 group-hover:text-[#D4A017] transition-colors">
+                              Klik / seret file gambar ke sini untuk mengganti background rumah
+                            </p>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1">Atau URL Background Hero</label>
+                          <input
+                            type="text"
+                            placeholder="https://contoh.com/gambar.jpg"
+                            value={heroBgImage}
+                            onChange={(e) => setHeroBgImage(e.target.value)}
+                            className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2 text-3xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2. SEKSI PROFIL FOUNDER */}
+                  <div className="space-y-4 border-b border-gray-100 pb-6">
+                    <h3 className="text-sm font-black text-[#0F172A] border-l-4 border-[#D4A017] pl-3">2. Konfigurasi Profil Founder</h3>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-2xs font-extrabold text-slate-500 uppercase tracking-widest mb-2">Atau Gunakan URL Gambar</label>
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Nama Founder</label>
                         <input
                           type="text"
-                          placeholder="https://contoh.com/foto-founder.jpg atau /uploads/nama_file.jpg"
-                          value={founderPhotoUrl}
-                          onChange={(e) => setFounderPhotoUrl(e.target.value)}
-                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-3 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017] focus:border-transparent transition"
+                          value={founderName}
+                          onChange={(e) => setFounderName(e.target.value)}
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
                         />
                       </div>
+
+                      <div>
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Gelar / Jabatan Founder</label>
+                        <input
+                          type="text"
+                          value={founderTitle}
+                          onChange={(e) => setFounderTitle(e.target.value)}
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center pt-2">
+                      {/* Live Preview Column */}
+                      <div className="md:col-span-4 flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border border-gray-100 text-center">
+                        <span className="text-4xs font-extrabold text-gray-400 uppercase tracking-widest mb-2">Foto Profil Founder</span>
+                        <div className="w-24 h-24 rounded-full border-2 border-[#D4A017] overflow-hidden shadow-md bg-slate-200 relative">
+                          {founderPhotoUrl ? (
+                            <img src={founderPhotoUrl} alt="Foto Founder" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400"><User className="h-6 w-6" /></div>
+                          )}
+                          {uploadFounderLoading && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white"><span className="text-3xs font-bold">...</span></div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Inputs and Controls Column */}
+                      <div className="md:col-span-8 space-y-3">
+                        <div>
+                          <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1">Unggah Foto Profil Founder</label>
+                          <div className="border border-dashed border-gray-200 hover:border-[#D4A017] rounded-xl p-3 text-center cursor-pointer relative transition bg-slate-50/50 group">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleFounderPhotoUpload}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            />
+                            <p className="text-3xs font-bold text-slate-700 group-hover:text-[#D4A017] transition-colors">
+                              Klik / seret file gambar untuk mengganti foto founder
+                            </p>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1">Atau URL Foto Profil</label>
+                          <input
+                            type="text"
+                            value={founderPhotoUrl}
+                            onChange={(e) => setFounderPhotoUrl(e.target.value)}
+                            className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2 text-3xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. SEKSI TENTANG SAYA */}
+                  <div className="space-y-4 border-b border-gray-100 pb-6">
+                    <h3 className="text-sm font-black text-[#0F172A] border-l-4 border-[#D4A017] pl-3">3. Konfigurasi Halaman Tentang Saya</h3>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Judul Sambutan Tentang Saya</label>
+                        <input
+                          type="text"
+                          value={aboutHeading}
+                          onChange={(e) => setAboutHeading(e.target.value)}
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Paragraf Pembuka (About Text 1)</label>
+                        <textarea
+                          rows={3}
+                          value={aboutText1}
+                          onChange={(e) => setAboutText1(e.target.value)}
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Kutipan / Quote Kunci</label>
+                        <input
+                          type="text"
+                          value={aboutQuote}
+                          onChange={(e) => setAboutQuote(e.target.value)}
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Paragraf Penutup (About Text 2)</label>
+                        <textarea
+                          rows={3}
+                          value={aboutText2}
+                          onChange={(e) => setAboutText2(e.target.value)}
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 4. KONTAK UTAMA */}
+                  <div className="space-y-4 pb-4">
+                    <h3 className="text-sm font-black text-[#0F172A] border-l-4 border-[#D4A017] pl-3">4. Konfigurasi Kontak & WhatsApp</h3>
+                    
+                    <div>
+                      <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Nomor WhatsApp Agen (Gunakan kode negara tanpa +, contoh: 6281234567890)</label>
+                      <input
+                        type="text"
+                        value={whatsAppNo}
+                        onChange={(e) => setWhatsAppNo(e.target.value)}
+                        className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                      />
                     </div>
                   </div>
 
@@ -1020,10 +1254,10 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
                     <button
                       type="submit"
                       disabled={isSavingSettings || uploadFounderLoading}
-                      className="bg-[#D4A017] hover:bg-[#C29014] text-[#0F172A] font-extrabold text-xs px-6 py-3.5 rounded-xl transition shadow flex items-center justify-center gap-1.5 cursor-pointer disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none"
+                      className="bg-[#D4A017] hover:bg-[#C29014] text-[#0F172A] font-extrabold text-xs px-8 py-4 rounded-xl transition shadow-lg flex items-center justify-center gap-1.5 cursor-pointer disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none"
                     >
                       <CheckCircle2 className="h-4 w-4" />
-                      {isSavingSettings ? 'Menyimpan Perubahan...' : 'Simpan Perubahan'}
+                      {isSavingSettings ? 'Menyimpan Perubahan...' : 'Simpan Seluruh Perubahan Web'}
                     </button>
                   </div>
                 </form>

@@ -4,12 +4,12 @@ import { Award, Compass, MapPin, CheckCircle, ShieldCheck, HeartHandshake, Phone
 interface TentangSayaProps {
   onOpenConsultation: () => void;
   onNavigateToTab: (tabId: string) => void;
-  founderPhotoUrl?: string;
+  settings?: any;
 }
 
-export default function TentangSaya({ onOpenConsultation, onNavigateToTab, founderPhotoUrl }: TentangSayaProps) {
+export default function TentangSaya({ onOpenConsultation, onNavigateToTab, settings }: TentangSayaProps) {
   const defaultPhoto = "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=300&h=300&q=80";
-  const finalFounderPhoto = founderPhotoUrl || defaultPhoto;
+  const finalFounderPhoto = settings?.founderPhotoUrl || defaultPhoto;
   const workAreas = [
     { name: 'Bekasi Barat', detail: 'Dekat dengan Jakarta Timur, pertumbuhan komersial pesat.' },
     { name: 'Bekasi Timur', detail: 'Kawasan residensial asri, dekat KRL & LRT Bekasi.' },
@@ -34,7 +34,7 @@ export default function TentangSaya({ onOpenConsultation, onNavigateToTab, found
             Profil Agen Property Anda
           </span>
           <h2 className="text-3xl font-extrabold text-[#0F172A] mt-3 sm:text-4xl">
-            Kenali Uncle Hadi Lebih Dekat
+            Kenali {settings?.founderName || "Uncle Hadi"} Lebih Dekat
           </h2>
           <p className="mt-3 text-base text-gray-500 max-w-2xl mx-auto">
             "Membantu, mengedukasi, dan mendampingi masyarakat menemukan property yang tepat."
@@ -53,20 +53,20 @@ export default function TentangSaya({ onOpenConsultation, onNavigateToTab, found
               <div className="w-44 h-44 rounded-full border-4 border-[#D4A017] overflow-hidden shadow-lg mb-6 relative">
                 <img
                   src={finalFounderPhoto}
-                  alt="Hadi - Uncle Hadi.Property"
+                  alt={`${settings?.founderName || "Hadi"} - Uncle Hadi.Property`}
                   className="w-full h-full object-cover"
                 />
               </div>
 
               {/* Name and brand */}
-              <h3 className="text-2xl font-black text-[#0F172A]">Hadi  Sukmono</h3>
-              <p className="text-xs font-bold text-[#D4A017] uppercase tracking-widest mt-1">Founder & Agen Property Utama</p>
-              <p className="text-xs text-gray-400 mt-0.5">Uncle Hadi.Property – Teman Cari Property</p>
+              <h3 className="text-2xl font-black text-[#0F172A]">{settings?.founderName || "Hadi Sukmono"}</h3>
+              <p className="text-xs font-bold text-[#D4A017] uppercase tracking-widest mt-1">{settings?.founderTitle || "Founder & Agen Property Utama"}</p>
+              <p className="text-xs text-gray-400 mt-0.5">{settings?.founderBrand || "Uncle Hadi.Property – Teman Cari Property"}</p>
 
               {/* Contact mini bar */}
               <div className="grid grid-cols-2 gap-3 w-full mt-6 pt-6 border-t border-gray-100">
                 <a
-                  href="https://wa.me/6281234567890"
+                  href={`https://wa.me/${settings?.whatsAppNo || '6281234567890'}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs py-2 px-3 rounded-xl transition flex items-center justify-center gap-1"
@@ -89,20 +89,20 @@ export default function TentangSaya({ onOpenConsultation, onNavigateToTab, found
             <div className="bg-white rounded-3xl p-8 shadow-md border border-gray-100 flex-1 flex flex-col justify-between space-y-6">
               <div className="space-y-4">
                 <h3 className="text-xl font-bold text-[#0F172A] border-l-4 border-[#D4A017] pl-3 leading-tight">
-                  Halo, Saya Hadi Sukmono. Selamat Datang di Uncle Hadi.Property
+                  {settings?.aboutHeading || "Halo, Saya Hadi Sukmono. Selamat Datang di Uncle Hadi.Property"}
                 </h3>
                 
                 <div className="text-sm text-gray-600 leading-relaxed space-y-4">
                   <p>
-                    Saya adalah agen property yang berfokus membantu masyarakat menemukan rumah, apartemen, ruko, dan investasi properti yang sesuai kebutuhan Anda di Bekasi, Jakarta Timur, Cikarang, dan sekitarnya.
+                    {settings?.aboutText1 || "Saya adalah agen property yang berfokus membantu masyarakat menemukan rumah, apartemen, ruko, dan investasi properti yang sesuai kebutuhan Anda di Bekasi, Jakarta Timur, Cikarang, dan sekitarnya."}
                   </p>
                   
                   <p className="font-semibold text-[#0F172A] italic border-l-2 border-[#D4A017] pl-4">
-                    "Saya percaya bahwa membeli atau menjual properti adalah salah satu keputusan terbesar dalam hidup yang membutuhkan informasi yang jelas, jujur, dan pendampingan yang tepat."
+                    {settings?.aboutQuote || '"Saya percaya bahwa membeli atau menjual properti adalah salah satu keputusan terbesar dalam hidup yang membutuhkan informasi yang jelas, jujur, dan pendampingan yang tepat."'}
                   </p>
 
                   <p>
-                    Melalui website ini, saya berbagi informasi property yang transparan, artikel edukasi yang mudah dipahami, serta layanan pemasaran properti digital premium bagi pemilik yang ingin menjual atau menyewakan asetnya secara cepat.
+                    {settings?.aboutText2 || "Melalui website ini, saya berbagi informasi property yang transparan, artikel edukasi yang mudah dipahami, serta layanan pemasaran properti digital premium bagi pemilik yang ingin menjual atau menyewakan asetnya secara cepat."}
                   </p>
 
                   <p className="text-xs text-gray-500">
