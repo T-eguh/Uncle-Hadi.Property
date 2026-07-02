@@ -6,7 +6,7 @@ import { Property } from '../types';
 interface BerandaProps {
   onNavigateToTab: (tabId: string) => void;
   onOpenConsultation: () => void;
-  properties?: Property[];
+  properties?: Property[] | null;
   settings?: any;
 }
 
@@ -15,7 +15,7 @@ export default function Beranda({ onNavigateToTab, onOpenConsultation, propertie
   const defaultPhoto = "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=350&h=350&q=80";
   const finalFounderPhoto = settings?.founderPhotoUrl || defaultPhoto;
   // Use dynamic properties if passed, otherwise fall back to static PROPERTIES_DATA
-  const featuredProperties = (properties && properties.length > 0) ? properties.slice(0, 6) : PROPERTIES_DATA.slice(0, 6);
+  const featuredProperties = (properties !== null && properties !== undefined) ? properties.slice(0, 6) : PROPERTIES_DATA.slice(0, 6);
   // Use the first 3 articles as featured articles
   const featuredArticles = ARTICLES_DATA.slice(0, 3);
 
@@ -32,16 +32,16 @@ export default function Beranda({ onNavigateToTab, onOpenConsultation, propertie
       badge: settings?.founderBrand || "Uncle Hadi.Property – Teman Cari Property"
     },
     {
-      title: "Konsultasi Properti Jujur, Amanah & Pendampingan Sepenuh Hati",
-      subtitle: "Dapatkan solusi hunian ideal, ruko produktif, atau investasi tanah dengan bimbingan hukum yang aman, jujur, transparan, serta didampingi penuh hingga selesai akad.",
-      image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80",
-      badge: "Layanan Konsultasi Amanah & Berlisensi"
+      title: settings?.slide2Title || "Konsultasi Properti Jujur, Amanah & Pendampingan Sepenuh Hati",
+      subtitle: settings?.slide2Subtitle || "Dapatkan solusi hunian ideal, ruko produktif, atau investasi tanah dengan bimbingan hukum yang aman, jujur, transparan, serta didampingi penuh hingga selesai akad.",
+      image: settings?.slide2Image || "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80",
+      badge: settings?.slide2Badge || "Layanan Konsultasi Amanah & Berlisensi"
     },
     {
-      title: "Pasarkan Properti Anda Lebih Cepat dengan Strategi Digital Modern",
-      subtitle: "Layanan titip jual atau sewa properti premium untuk menjangkau ribuan calon pembeli potensial secara tertarget di wilayah Bekasi, Cikarang, dan Jakarta Timur.",
-      image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1920&q=80",
-      badge: "Jasa Pemasaran & Titip Jual Digital Premium"
+      title: settings?.slide3Title || "Pasarkan Properti Anda Lebih Cepat dengan Strategi Digital Modern",
+      subtitle: settings?.slide3Subtitle || "Layanan titip jual atau sewa properti premium untuk menjangkau ribuan calon pembeli potensial secara tertarget di wilayah Bekasi, Cikarang, dan Jakarta Timur.",
+      image: settings?.slide3Image || "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1920&q=80",
+      badge: settings?.slide3Badge || "Jasa Pemasaran & Titip Jual Digital Premium"
     }
   ];
 

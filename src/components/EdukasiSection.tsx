@@ -5,14 +5,20 @@ import { ARTICLES_DATA, THIRTY_ARTICLE_TITLES } from '../data';
 
 interface EdukasiSectionProps {
   onNavigateToTab: (tabId: string) => void;
+  articles?: Article[] | null;
 }
 
-export default function EdukasiSection({ onNavigateToTab }: EdukasiSectionProps) {
+export default function EdukasiSection({ onNavigateToTab, articles }: EdukasiSectionProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
 
-  // Construct full list of 30 articles by matching with detailed data, or auto-generating basic details for the remainder
+  // Construct full list of articles, preferring dynamic database articles first
   const allArticles: Article[] = useMemo(() => {
+    if (articles && articles.length > 0) {
+      return articles;
+    }
+    
+    // Fallback to static articles with 30 items if no database articles exist
     return THIRTY_ARTICLE_TITLES.map((title, index) => {
       // If we have full detailed article text in ARTICLES_DATA, use it
       const detailed = ARTICLES_DATA.find(a => a.title.toLowerCase().trim() === title.toLowerCase().trim());
@@ -44,7 +50,7 @@ Berikut poin-poin utama yang perlu Anda perhatikan:
         image: `https://images.unsplash.com/photo-${1560518883 + index % 10}-ce09059eeffa?auto=format&fit=crop&w=800&q=80`
       };
     });
-  }, []);
+  }, [articles]);
 
   const filteredArticles = useMemo(() => {
     if (!searchTerm.trim()) return allArticles;

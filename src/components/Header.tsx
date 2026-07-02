@@ -5,9 +5,10 @@ interface HeaderProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   onOpenConsultation: () => void;
+  settings?: any;
 }
 
-export default function Header({ activeTab, setActiveTab, onOpenConsultation }: HeaderProps) {
+export default function Header({ activeTab, setActiveTab, onOpenConsultation, settings }: HeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const menuItems = [
@@ -33,15 +34,21 @@ export default function Header({ activeTab, setActiveTab, onOpenConsultation }: 
         <div className="flex items-center justify-between h-20">
           {/* Logo and Brand */}
           <div className="flex items-center cursor-pointer" onClick={() => handleTabClick('beranda')} id="brand-logo">
-            <div className="bg-gradient-to-br from-[#D4A017] to-[#AA7C11] p-2.5 rounded-lg mr-3 shadow-md">
-              <Building className="h-6 w-6 text-[#0F172A]" />
-            </div>
+            {settings?.logoImageUrl ? (
+              <div className="w-11 h-11 rounded-lg mr-3 shadow-md overflow-hidden shrink-0 border border-[#D4A017]/30 bg-slate-800 flex items-center justify-center">
+                <img src={settings.logoImageUrl} alt="Logo" className="w-full h-full object-cover" />
+              </div>
+            ) : (
+              <div className="bg-gradient-to-br from-[#D4A017] to-[#AA7C11] p-2.5 rounded-lg mr-3 shadow-md">
+                <Building className="h-6 w-6 text-[#0F172A]" />
+              </div>
+            )}
             <div>
               <span className="text-xl font-bold tracking-tight block text-white">
-                Uncle Hadi<span className="text-[#D4A017]">.Property</span>
+                {settings?.logoText || "Uncle Hadi"}<span className="text-[#D4A017]">{settings?.logoColorText || ".Property"}</span>
               </span>
               <span className="text-xs text-[#F8FAFC]/75 font-medium tracking-wider block">
-                Teman Cari Property
+                {settings?.logoSlogan || "Teman Cari Property"}
               </span>
             </div>
           </div>

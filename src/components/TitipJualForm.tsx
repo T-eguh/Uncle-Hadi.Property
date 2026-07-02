@@ -98,9 +98,11 @@ export default function TitipJualForm({ onOpenConsultation }: TitipJualFormProps
 
     text += `\n*FOTO YANG DISIAPKAN:* \n`;
     text += `- Tampak Depan: ${uploadedPhotos['tampakDepan'] ? '✅ ' + uploadedPhotos['tampakDepan'] : '❌ Belum Upload'}\n`;
-    text += `- Dalam Rumah: ${uploadedPhotos['dalamRumah'] ? '✅ ' + uploadedPhotos['dalamRumah'] : '❌ Belum Upload'}\n`;
-    text += `- Lebar Jalan: ${uploadedPhotos['lebarJalan'] ? '✅ ' + uploadedPhotos['lebarJalan'] : '❌ Belum Upload'}\n`;
-    text += `- Screenshot Kompas: ${uploadedPhotos['screenshotKompas'] ? '✅ ' + uploadedPhotos['screenshotKompas'] : '❌ Belum Upload'}\n`;
+    text += `- Tampak Ruang Dalam (Ruang Tamu dll): ${uploadedPhotos['ruangDalam'] ? '✅ ' + uploadedPhotos['ruangDalam'] : '❌ Belum Upload'}\n`;
+    text += `- Tampak Ruang Dapur/Ruang Makan: ${uploadedPhotos['ruangDapur'] ? '✅ ' + uploadedPhotos['ruangDapur'] : '❌ Belum Upload'}\n`;
+    text += `- Tampak Ruang Kamar Tidur/Kamar Mandi: ${uploadedPhotos['kamarTidur'] ? '✅ ' + uploadedPhotos['kamarTidur'] : '❌ Belum Upload'}\n`;
+    text += `- Tampak Lantai Atas (jika ada): ${uploadedPhotos['lantaiAtas'] ? '✅ ' + uploadedPhotos['lantaiAtas'] : '❌ Belum Upload'}\n`;
+    text += `- Lebar Jalan Depan: ${uploadedPhotos['lebarJalan'] ? '✅ ' + uploadedPhotos['lebarJalan'] : '❌ Belum Upload'}\n`;
 
     return text;
   };
@@ -602,18 +604,20 @@ export default function TitipJualForm({ onOpenConsultation }: TitipJualFormProps
               {/* Photo Upload simulation */}
               <div className="space-y-4" id="form-photos-section">
                 <h3 className="text-base font-bold text-[#0F172A] border-l-4 border-[#D4A017] pl-3">
-                  4. Upload Dokumentasi Foto Property (Minimal 3 Foto)
+                  4. Upload Dokumentasi Foto Property (Wajib & Lengkap)
                 </h3>
                 <p className="text-2xs text-gray-400">
-                  Untuk hasil iklan terbaik, mohon persiapkan minimal foto tampak depan, bagian dalam rumah, lebar jalan, serta screenshot kompas arah mata angin.
+                  Untuk hasil iklan terbaik, mohon persiapkan foto tampak depan, ruang dalam, dapur, kamar tidur/mandi, lantai atas (jika ada), serta info lebar jalan depan.
                 </p>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                   {[
                     { key: 'tampakDepan', label: 'Tampak Depan' },
-                    { key: 'dalamRumah', label: 'Dalam Rumah' },
-                    { key: 'lebarJalan', label: 'Lebar Jalan' },
-                    { key: 'screenshotKompas', label: 'Kompas Hadap' }
+                    { key: 'ruangDalam', label: 'Tampak Ruang Dalam (Ruang Tamu dll)' },
+                    { key: 'ruangDapur', label: 'Tampak Ruang Dapur / Ruang Makan' },
+                    { key: 'kamarTidur', label: 'Tampak Ruang Kamar Tidur / Kamar Mandi' },
+                    { key: 'lantaiAtas', label: 'Tampak Lantai Atas (Jika Ada)' },
+                    { key: 'lebarJalan', label: 'Lebar Jalan Depan' }
                   ].map((photo) => (
                     <div key={photo.key} className="border-2 border-dashed border-gray-200 hover:border-[#D4A017] rounded-xl p-3 text-center relative bg-slate-50/50 hover:bg-slate-50 transition flex flex-col justify-between h-36">
                       <input
@@ -625,7 +629,7 @@ export default function TitipJualForm({ onOpenConsultation }: TitipJualFormProps
                       />
                       <div className="space-y-1">
                         <Upload className="h-5 w-5 text-gray-400 mx-auto" />
-                        <span className="block text-2xs font-bold text-gray-700">{photo.label}</span>
+                        <span className="block text-2xs font-bold text-gray-700 leading-tight">{photo.label}</span>
                       </div>
                       <span className="block text-3xs text-gray-400 line-clamp-2">
                         {uploadedPhotos[photo.key] ? `✅ ${uploadedPhotos[photo.key]}` : 'Pilih file / seret'}

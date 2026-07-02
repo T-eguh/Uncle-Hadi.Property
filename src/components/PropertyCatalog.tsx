@@ -7,20 +7,19 @@ interface PropertyCatalogProps {
   onOpenConsultation: () => void;
   onNavigateToTab: (tabId: string) => void;
   initialCategoryFilter?: string;
-  properties?: Property[];
+  properties?: Property[] | null;
 }
 
 export default function PropertyCatalog({ onOpenConsultation, onNavigateToTab, initialCategoryFilter = 'all', properties }: PropertyCatalogProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategoryFilter); // 'all', 'Primary', 'Secondary'
-  const [selectedRegion, setSelectedRegion] = useState<string>('all'); // 'all', 'Bekasi', 'Jakarta Timur', 'Cikarang', 'Karawang'
+  const [selectedRegion, setSelectedRegion] = useState<string>('all'); 
   const [selectedType, setSelectedType] = useState<string>('all'); // 'all', 'rumah hunian', 'apartement', 'ruko', 'tanah kavling'
   const [selectedPriceRange, setSelectedPriceRange] = useState<string>('all'); 
-  // 'all', 'low' (50jt - 500jt), 'mid' (501jt - 2milyar), 'high' (> 2milyar)
 
   const [selectedPropertyDetail, setSelectedPropertyDetail] = useState<Property | null>(null);
 
-  const regions = ['Bekasi', 'Jakarta Timur', 'Cikarang', 'Karawang'];
+  const regions = ['Jakarta', 'Jawa Barat', 'Jawa Tengah', 'Jawa Timur', 'Bali'];
   const propertyTypes = [
     { value: 'rumah hunian', label: 'Rumah Hunian' },
     { value: 'apartement', label: 'Apartemen' },
@@ -29,14 +28,15 @@ export default function PropertyCatalog({ onOpenConsultation, onNavigateToTab, i
   ];
 
   const priceRanges = [
-    { value: 'low', label: 'Rp 50 Juta - Rp 500 Juta' },
-    { value: 'mid', label: 'Rp 501 Juta - Rp 2 Milyar' },
-    { value: 'high', label: 'Di atas Rp 2 Milyar' }
+    { value: 'under_1b', label: 'Di bawah 1 Miliar' },
+    { value: '1b_3b', label: '1 - 3 Miliar' },
+    { value: '3b_10b', label: '3 - 10 Miliar' },
+    { value: 'above_10b', label: 'Di atas 10 Miliar' }
   ];
 
   // Filtering Logic
   const filteredProperties = useMemo(() => {
-    const list = (properties && properties.length > 0) ? properties : PROPERTIES_DATA;
+    const list = (properties !== null && properties !== undefined) ? properties : PROPERTIES_DATA;
     return list.filter((prop) => {
       // Search text match
       const matchesSearch = 
@@ -57,12 +57,14 @@ export default function PropertyCatalog({ onOpenConsultation, onNavigateToTab, i
 
       // Price match
       let matchesPrice = true;
-      if (selectedPriceRange === 'low') {
-        matchesPrice = prop.price >= 50000000 && prop.price <= 500000000;
-      } else if (selectedPriceRange === 'mid') {
-        matchesPrice = prop.price >= 501000000 && prop.price <= 2000000000;
-      } else if (selectedPriceRange === 'high') {
-        matchesPrice = prop.price > 2000000000;
+      if (selectedPriceRange === 'under_1b') {
+        matchesPrice = prop.price < 1000000000;
+      } else if (selectedPriceRange === '1b_3b') {
+        matchesPrice = prop.price >= 1000000000 && prop.price <= 3000000000;
+      } else if (selectedPriceRange === '3b_10b') {
+        matchesPrice = prop.price >= 3000000000 && prop.price <= 10000000000;
+      } else if (selectedPriceRange === 'above_10b') {
+        matchesPrice = prop.price > 10000000000;
       }
 
       return matchesSearch && matchesCategory && matchesRegion && matchesType && matchesPrice;

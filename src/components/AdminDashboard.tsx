@@ -3,14 +3,17 @@ import {
   Building, Lock, LogIn, LogOut, FileText, CheckCircle2, 
   Trash2, Plus, Edit2, Upload, AlertCircle, Eye, 
   X, MapPin, Compass, Zap, Droplet, User, Phone, 
-  Search, ShieldAlert, ArrowLeft, ExternalLink, MessageSquare 
+  Search, ShieldAlert, ArrowLeft, ExternalLink, MessageSquare,
+  BookOpen, Sparkles, Settings, Image as ImageIcon
 } from 'lucide-react';
-import { Property } from '../types';
+import { Property, Article } from '../types';
 
 interface AdminDashboardProps {
   onBackToWebsite: () => void;
   onRefreshProperties: () => void;
   onRefreshSettings?: () => void;
+  onRefreshArticles?: () => void;
+  articles?: Article[] | null;
 }
 
 interface Inquiry {
@@ -22,7 +25,13 @@ interface Inquiry {
   details: any;
 }
 
-export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, onRefreshSettings }: AdminDashboardProps) {
+export default function AdminDashboard({ 
+  onBackToWebsite, 
+  onRefreshProperties, 
+  onRefreshSettings,
+  onRefreshArticles,
+  articles = []
+}: AdminDashboardProps) {
   // Authentication States
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState('');
@@ -35,9 +44,9 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
   const [properties, setProperties] = useState<Property[]>([]);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [dataLoading, setDataLoading] = useState(false);
-  const [activeSubTab, setActiveSubTab] = useState<'properties' | 'inquiries' | 'founder'>('properties');
+  const [activeSubTab, setActiveSubTab] = useState<'properties' | 'inquiries_jual' | 'inquiries_beli' | 'inquiries_kontak' | 'articles' | 'ai-property' | 'founder' | 'settings'>('properties');
   
-  // Founder Settings States
+  // Founder & Website Settings States
   const [founderPhotoUrl, setFounderPhotoUrl] = useState('');
   const [founderName, setFounderName] = useState('');
   const [founderTitle, setFounderTitle] = useState('');
@@ -50,10 +59,39 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
   const [heroSubtitle, setHeroSubtitle] = useState('');
   const [heroBgImage, setHeroBgImage] = useState('');
   const [whatsAppNo, setWhatsAppNo] = useState('');
+  
+  // New Customizable Website Identity & Sliders States
+  const [logoText, setLogoText] = useState('Uncle Hadi');
+  const [logoColorText, setLogoColorText] = useState('.Property');
+  const [logoSlogan, setLogoSlogan] = useState('Teman Cari Property');
+  const [logoImageUrl, setLogoImageUrl] = useState('');
+  const [uploadLogoLoading, setUploadLogoLoading] = useState(false);
+  const [slide2Badge, setSlide2Badge] = useState('Layanan Konsultasi Amanah & Berlisensi');
+  const [slide2Title, setSlide2Title] = useState('Konsultasi Properti Jujur, Amanah & Pendampingan Sepenuh Hati');
+  const [slide2Subtitle, setSlide2Subtitle] = useState('Dapatkan solusi hunian ideal, ruko produktif, atau investasi tanah dengan bimbingan hukum yang aman, jujur, transparan, serta didampingi penuh hingga selesai akad.');
+  const [slide2Image, setSlide2Image] = useState('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80');
+  const [slide3Badge, setSlide3Badge] = useState('Jasa Pemasaran & Titip Jual Digital Premium');
+  const [slide3Title, setSlide3Title] = useState('Pasarkan Properti Anda Lebih Cepat dengan Strategi Digital Modern');
+  const [slide3Subtitle, setSlide3Subtitle] = useState('Layanan titip jual atau sewa properti premium untuk menjangkau ribuan calon pembeli potensial secara tertarget di wilayah Bekasi, Cikarang, dan Jakarta Timur.');
+  const [slide3Image, setSlide3Image] = useState('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1920&q=80');
+  const [officeAddress, setOfficeAddress] = useState('Bekasi Timur, Bekasi, Jawa Barat (Samping Stasiun KRL Bekasi Timur)');
+  const [officeEmail, setOfficeEmail] = useState('hadi@unclehadi.property');
+  const [officePhone, setOfficePhone] = useState('+62 812-3456-7890');
+  const [systemInstruction, setSystemInstruction] = useState('');
+
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [settingsError, setSettingsError] = useState('');
   const [settingsSuccess, setSettingsSuccess] = useState('');
   const [uploadFounderLoading, setUploadFounderLoading] = useState(false);
+
+  // Articles States
+  const [showArticleModal, setShowArticleModal] = useState(false);
+  const [editingArticle, setEditingArticle] = useState<Partial<Article> | null>(null);
+  const [articleFormError, setArticleFormError] = useState('');
+  const [articleFormSaving, setArticleFormSaving] = useState(false);
+  const [articleUploadLoading, setArticleUploadLoading] = useState(false);
+  const [articleUploadError, setArticleUploadError] = useState('');
+  const [searchArticleTerm, setSearchArticleTerm] = useState('');
 
   // Search & Filter States
   const [searchPropertyTerm, setSearchPropertyTerm] = useState('');
@@ -62,6 +100,29 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
 
   // Property Form/Modal States
   const [showFormModal, setShowFormModal] = useState(false);
+
+  // Custom Confirm & Alert Modal States
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    message: string;
+    onConfirm: () => void;
+  } | null>(null);
+
+  const [alertModal, setAlertModal] = useState<{
+    isOpen: boolean;
+    message: string;
+  } | null>(null);
+
+  const triggerConfirm = (message: string, action: () => void | Promise<void>) => {
+    setConfirmModal({
+      isOpen: true,
+      message,
+      onConfirm: async () => {
+        setConfirmModal(null);
+        await action();
+      }
+    });
+  };
   const [editingProp, setEditingProp] = useState<Partial<Property> | null>(null);
   const [formError, setFormError] = useState('');
   const [formSaving, setFormSaving] = useState(false);
@@ -102,6 +163,12 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
           'Authorization': `Bearer ${authToken}`
         }
       });
+      if (inqRes.status === 401) {
+        localStorage.removeItem('hadi_admin_token');
+        setAuthToken('');
+        setIsLoggedIn(false);
+        return;
+      }
       if (inqRes.ok) {
         const inqData = await inqRes.json();
         // Sort inquiries newest first
@@ -124,6 +191,24 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
         setHeroSubtitle(settingsData.heroSubtitle || 'Saya membantu calon pembeli, penjual, dan investor property mendapatkan informasi yang jelas, transparan, dan terpercaya untuk wilayah Bekasi, Jakarta Timur, Cikarang, dan sekitarnya.');
         setHeroBgImage(settingsData.heroBgImage || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1920&q=80');
         setWhatsAppNo(settingsData.whatsAppNo || '6281234567890');
+        
+        // Populate customizable identity, slider 2 & 3, and footer contacts
+        setLogoText(settingsData.logoText || 'Uncle Hadi');
+        setLogoColorText(settingsData.logoColorText || '.Property');
+        setLogoSlogan(settingsData.logoSlogan || 'Teman Cari Property');
+        setLogoImageUrl(settingsData.logoImageUrl || '');
+        setSlide2Badge(settingsData.slide2Badge || 'Layanan Konsultasi Amanah & Berlisensi');
+        setSlide2Title(settingsData.slide2Title || 'Konsultasi Properti Jujur, Amanah & Pendampingan Sepenuh Hati');
+        setSlide2Subtitle(settingsData.slide2Subtitle || 'Dapatkan solusi hunian ideal, ruko produktif, atau investasi tanah dengan bimbingan hukum yang aman, jujur, transparan, serta didampingi penuh hingga selesai akad.');
+        setSlide2Image(settingsData.slide2Image || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80');
+        setSlide3Badge(settingsData.slide3Badge || 'Jasa Pemasaran & Titip Jual Digital Premium');
+        setSlide3Title(settingsData.slide3Title || 'Pasarkan Properti Anda Lebih Cepat dengan Strategi Digital Modern');
+        setSlide3Subtitle(settingsData.slide3Subtitle || 'Layanan titip jual atau sewa properti premium untuk menjangkau ribuan calon pembeli potensial secara tertarget di wilayah Bekasi, Cikarang, dan Jakarta Timur.');
+        setSlide3Image(settingsData.slide3Image || 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1920&q=80');
+        setOfficeAddress(settingsData.officeAddress || 'Bekasi Timur, Bekasi, Jawa Barat (Samping Stasiun KRL Bekasi Timur)');
+        setOfficeEmail(settingsData.officeEmail || 'hadi@unclehadi.property');
+        setOfficePhone(settingsData.officePhone || '+62 812-3456-7890');
+        setSystemInstruction(settingsData.systemInstruction || '');
       }
     } catch (err) {
       console.error('Error fetching admin data:', err);
@@ -334,6 +419,56 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
     reader.readAsDataURL(file);
   };
 
+  // Handle logo image upload
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+
+    if (!file.type.startsWith('image/')) {
+      setSettingsError('File harus berupa format gambar!');
+      return;
+    }
+
+    setUploadLogoLoading(true);
+    setSettingsError('');
+    setSettingsSuccess('');
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64Data = reader.result as string;
+      try {
+        const res = await fetch('/api/admin/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({
+            filename: file.name,
+            base64Data
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          setLogoImageUrl(data.imageUrl);
+          setSettingsSuccess('Foto Logo berhasil diunggah! Klik "Simpan Perubahan" untuk menerapkan secara permanen.');
+        } else {
+          setSettingsError(data.error || 'Gagal mengunggah logo.');
+        }
+      } catch (err) {
+        setSettingsError('Kesalahan jaringan saat mengunggah foto.');
+      } finally {
+        setUploadLogoLoading(false);
+      }
+    };
+    reader.onerror = () => {
+      setSettingsError('Gagal membaca file gambar.');
+      setUploadLogoLoading(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
   // Save founder photo to server settings
   const handleSaveFounderSettings = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -360,7 +495,23 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
           heroTitle,
           heroSubtitle,
           heroBgImage,
-          whatsAppNo
+          whatsAppNo,
+          logoText,
+          logoColorText,
+          logoSlogan,
+          logoImageUrl,
+          slide2Badge,
+          slide2Title,
+          slide2Subtitle,
+          slide2Image,
+          slide3Badge,
+          slide3Title,
+          slide3Subtitle,
+          slide3Image,
+          officeAddress,
+          officeEmail,
+          officePhone,
+          systemInstruction
         })
       });
 
@@ -378,6 +529,141 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
     } finally {
       setIsSavingSettings(false);
     }
+  };
+
+  // Open article modal for Add
+  const handleOpenAddArticle = () => {
+    setEditingArticle({
+      title: '',
+      category: 'Edukasi Properti',
+      summary: '',
+      content: '',
+      image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80'
+    });
+    setArticleFormError('');
+    setShowArticleModal(true);
+  };
+
+  // Open article modal for Edit
+  const handleOpenEditArticle = (art: any) => {
+    setEditingArticle({ ...art });
+    setArticleFormError('');
+    setShowArticleModal(true);
+  };
+
+  // Handle saving article (Add or Edit)
+  const handleSaveArticle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setArticleFormError('');
+
+    if (!editingArticle?.title || !editingArticle?.category || !editingArticle?.content) {
+      setArticleFormError('Kolom Judul, Kategori, dan Konten wajib diisi!');
+      return;
+    }
+
+    if (!editingArticle?.image) {
+      setArticleFormError('Harap sertakan gambar artikel!');
+      return;
+    }
+
+    setArticleFormSaving(true);
+
+    try {
+      const res = await fetch('/api/admin/articles', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify(editingArticle)
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setShowArticleModal(false);
+        setEditingArticle(null);
+        if (onRefreshArticles) onRefreshArticles();
+      } else {
+        setArticleFormError(data.error || 'Gagal menyimpan data artikel.');
+      }
+    } catch (err) {
+      setArticleFormError('Gagal menghubungi server.');
+    } finally {
+      setArticleFormSaving(false);
+    }
+  };
+
+  // Delete Article
+  const handleDeleteArticle = (id: string) => {
+    triggerConfirm('Apakah Anda yakin ingin menghapus artikel edukasi ini?', async () => {
+      try {
+        const res = await fetch(`/api/admin/articles/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+
+        if (res.ok) {
+          if (onRefreshArticles) onRefreshArticles();
+        } else {
+          setAlertModal({ isOpen: true, message: 'Gagal menghapus artikel.' });
+        }
+      } catch (err) {
+        setAlertModal({ isOpen: true, message: 'Kesalahan jaringan saat menghapus artikel.' });
+      }
+    });
+  };
+
+  // Article Image Upload
+  const handleArticleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+
+    if (!file.type.startsWith('image/')) {
+      setArticleUploadError('File harus berupa format gambar!');
+      return;
+    }
+
+    setArticleUploadLoading(true);
+    setArticleUploadError('');
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64Data = reader.result as string;
+      try {
+        const res = await fetch('/api/admin/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({
+            filename: file.name,
+            base64Data
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          setEditingArticle(prev => ({
+            ...prev,
+            image: data.imageUrl
+          }));
+        } else {
+          setArticleUploadError(data.error || 'Gagal mengunggah gambar.');
+        }
+      } catch (err) {
+        setArticleUploadError('Kesalahan jaringan saat mengunggah gambar.');
+      } finally {
+        setArticleUploadLoading(false);
+      }
+    };
+    reader.onerror = () => {
+      setArticleUploadError('Gagal membaca file gambar.');
+      setArticleUploadLoading(false);
+    };
+    reader.readAsDataURL(file);
   };
 
   // Open property modal for Add
@@ -465,48 +751,48 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
   };
 
   // Delete Property
-  const handleDeleteProperty = async (id: string) => {
-    if (!window.confirm('Apakah Anda yakin ingin menghapus properti ini dari katalog?')) return;
+  const handleDeleteProperty = (id: string) => {
+    triggerConfirm('Apakah Anda yakin ingin menghapus properti ini dari katalog?', async () => {
+      try {
+        const res = await fetch(`/api/admin/properties/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
 
-    try {
-      const res = await fetch(`/api/admin/properties/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${authToken}`
+        if (res.ok) {
+          fetchData();
+          onRefreshProperties();
+        } else {
+          setAlertModal({ isOpen: true, message: 'Gagal menghapus properti.' });
         }
-      });
-
-      if (res.ok) {
-        fetchData();
-        onRefreshProperties();
-      } else {
-        alert('Gagal menghapus properti.');
+      } catch (err) {
+        setAlertModal({ isOpen: true, message: 'Kesalahan jaringan saat menghapus properti.' });
       }
-    } catch (err) {
-      alert('Kesalahan jaringan saat menghapus properti.');
-    }
+    });
   };
 
   // Delete Inquiry
-  const handleDeleteInquiry = async (id: string) => {
-    if (!window.confirm('Hapus log pengajuan ini?')) return;
+  const handleDeleteInquiry = (id: string) => {
+    triggerConfirm('Hapus log pengajuan ini?', async () => {
+      try {
+        const res = await fetch(`/api/admin/inquiries/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
 
-    try {
-      const res = await fetch(`/api/admin/inquiries/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${authToken}`
+        if (res.ok) {
+          fetchData();
+        } else {
+          setAlertModal({ isOpen: true, message: 'Gagal menghapus pengajuan.' });
         }
-      });
-
-      if (res.ok) {
-        fetchData();
-      } else {
-        alert('Gagal menghapus pengajuan.');
+      } catch (err) {
+        setAlertModal({ isOpen: true, message: 'Kesalahan jaringan.' });
       }
-    } catch (err) {
-      alert('Kesalahan jaringan.');
-    }
+    });
   };
 
   // Filter properties based on search term
@@ -515,14 +801,41 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
     prop.location.toLowerCase().includes(searchPropertyTerm.toLowerCase())
   );
 
-  // Filter inquiries based on type and search term
-  const filteredInquiries = inquiries.filter(inq => {
-    const matchesType = inquiryTypeFilter === 'all' || inq.type === inquiryTypeFilter;
-    const matchesSearch = 
-      inq.name.toLowerCase().includes(searchInquiryTerm.toLowerCase()) ||
-      inq.phone.toLowerCase().includes(searchInquiryTerm.toLowerCase()) ||
-      (inq.details?.address && inq.details.address.toLowerCase().includes(searchInquiryTerm.toLowerCase()));
-    return matchesType && matchesSearch;
+  // Filter inquiries based on sub-tab and search term
+  const filteredInquiriesJual = inquiries.filter(inq => {
+    if (inq.type !== 'titip-jual') return false;
+    const term = searchInquiryTerm.toLowerCase();
+    return !term || 
+      inq.name.toLowerCase().includes(term) ||
+      inq.phone.toLowerCase().includes(term) ||
+      (inq.details?.address && inq.details.address.toLowerCase().includes(term));
+  });
+
+  const filteredInquiriesBeli = inquiries.filter(inq => {
+    if (inq.type !== 'titip-cari') return false;
+    const term = searchInquiryTerm.toLowerCase();
+    return !term || 
+      inq.name.toLowerCase().includes(term) ||
+      inq.phone.toLowerCase().includes(term) ||
+      (inq.details?.specificArea && inq.details.specificArea.toLowerCase().includes(term));
+  });
+
+  const filteredInquiriesKontak = inquiries.filter(inq => {
+    if (inq.type !== 'kontak') return false;
+    const term = searchInquiryTerm.toLowerCase();
+    return !term || 
+      inq.name.toLowerCase().includes(term) ||
+      inq.phone.toLowerCase().includes(term) ||
+      (inq.details?.message && inq.details.message.toLowerCase().includes(term));
+  });
+
+  // Filter articles based on search term
+  const filteredArticles = (articles || []).filter(art => {
+    const term = searchArticleTerm.toLowerCase();
+    return !term ||
+      art.title.toLowerCase().includes(term) ||
+      art.category.toLowerCase().includes(term) ||
+      art.summary.toLowerCase().includes(term);
   });
 
   // Render Login Card
@@ -661,24 +974,82 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
                 }`}
               >
                 <Building className="h-4 w-4 mr-2.5" />
-                Manajemen Properti
+                Property
               </button>
 
               <button
-                onClick={() => setActiveSubTab('inquiries')}
+                onClick={() => setActiveSubTab('inquiries_jual')}
                 className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-semibold transition relative ${
-                  activeSubTab === 'inquiries'
+                  activeSubTab === 'inquiries_jual'
                     ? 'bg-[#D4A017] text-[#0F172A]'
                     : 'hover:bg-slate-800 text-slate-300 hover:text-white'
                 }`}
               >
                 <FileText className="h-4 w-4 mr-2.5" />
-                Monitoring Pengajuan
-                {inquiries.length > 0 && (
-                  <span className="absolute right-4 bg-red-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border border-slate-900">
-                    {inquiries.length}
+                Titip Jual
+                {inquiries.filter(i => i.type === 'titip-jual').length > 0 && (
+                  <span className="absolute right-4 bg-amber-600 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border border-slate-900">
+                    {inquiries.filter(i => i.type === 'titip-jual').length}
                   </span>
                 )}
+              </button>
+
+              <button
+                onClick={() => setActiveSubTab('inquiries_beli')}
+                className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-semibold transition relative ${
+                  activeSubTab === 'inquiries_beli'
+                    ? 'bg-[#D4A017] text-[#0F172A]'
+                    : 'hover:bg-slate-800 text-slate-300 hover:text-white'
+                }`}
+              >
+                <Search className="h-4 w-4 mr-2.5" />
+                Titip Beli
+                {inquiries.filter(i => i.type === 'titip-cari').length > 0 && (
+                  <span className="absolute right-4 bg-indigo-600 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border border-slate-900">
+                    {inquiries.filter(i => i.type === 'titip-cari').length}
+                  </span>
+                )}
+              </button>
+
+              <button
+                onClick={() => setActiveSubTab('inquiries_kontak')}
+                className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-semibold transition relative ${
+                  activeSubTab === 'inquiries_kontak'
+                    ? 'bg-[#D4A017] text-[#0F172A]'
+                    : 'hover:bg-slate-800 text-slate-300 hover:text-white'
+                }`}
+              >
+                <MessageSquare className="h-4 w-4 mr-2.5" />
+                Kontak
+                {inquiries.filter(i => i.type === 'kontak').length > 0 && (
+                  <span className="absolute right-4 bg-teal-600 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border border-slate-900">
+                    {inquiries.filter(i => i.type === 'kontak').length}
+                  </span>
+                )}
+              </button>
+
+              <button
+                onClick={() => setActiveSubTab('articles')}
+                className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-semibold transition ${
+                  activeSubTab === 'articles'
+                    ? 'bg-[#D4A017] text-[#0F172A]'
+                    : 'hover:bg-slate-800 text-slate-300 hover:text-white'
+                }`}
+              >
+                <BookOpen className="h-4 w-4 mr-2.5" />
+                Edukasi
+              </button>
+
+              <button
+                onClick={() => setActiveSubTab('ai-property')}
+                className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-semibold transition ${
+                  activeSubTab === 'ai-property'
+                    ? 'bg-[#D4A017] text-[#0F172A]'
+                    : 'hover:bg-slate-800 text-slate-300 hover:text-white'
+                }`}
+              >
+                <Sparkles className="h-4 w-4 mr-2.5" />
+                AI Property
               </button>
 
               <button
@@ -690,13 +1061,25 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
                 }`}
               >
                 <User className="h-4 w-4 mr-2.5" />
-                Profil Founder
+                Tentang Saya
+              </button>
+
+              <button
+                onClick={() => setActiveSubTab('settings')}
+                className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-semibold transition ${
+                  activeSubTab === 'settings'
+                    ? 'bg-[#D4A017] text-[#0F172A]'
+                    : 'hover:bg-slate-800 text-slate-300 hover:text-white'
+                }`}
+              >
+                <Settings className="h-4 w-4 mr-2.5" />
+                Logo & Tampilan
               </button>
             </nav>
           </div>
 
           <div className="p-2 border-t border-slate-800/60 pt-4 text-center">
-            <p className="text-4xs text-slate-500 font-semibold tracking-widest uppercase">Admin Terminal v1.1</p>
+            <p className="text-4xs text-slate-500 font-semibold tracking-widest uppercase">Admin Terminal v1.2</p>
           </div>
         </aside>
 
@@ -831,59 +1214,43 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
             </div>
           )}
 
-          {/* SubTab 2: Monitoring Pengajuan */}
-          {activeSubTab === 'inquiries' && (
+          {/* SubTab 2A: Monitoring Titip Jual */}
+          {activeSubTab === 'inquiries_jual' && (
             <div className="space-y-6">
               <div>
-                <h1 className="text-2xl font-black text-[#0F172A] tracking-tight">Pengajuan & Konsultasi Masuk</h1>
-                <p className="text-xs text-gray-500">Monitor dan kelola setiap pengajuan "Titip Jual", "Titip Cari", maupun "Konsultasi" yang dikirim pengunjung web.</p>
+                <h1 className="text-2xl font-black text-[#0F172A] tracking-tight">Permohonan Titip Jual / Sewa</h1>
+                <p className="text-xs text-gray-500">Monitor dan kelola setiap pengajuan "Titip Jual" yang dikirim pemilik properti secara instan.</p>
               </div>
 
               {/* Filtering and search widgets */}
-              <div className="bg-white rounded-2xl shadow-xs border border-gray-100 p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-2 relative">
+              <div className="bg-white rounded-2xl shadow-xs border border-gray-100 p-4">
+                <div className="relative">
                   <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Cari pengaju berdasarkan nama, nomor telepon..."
+                    placeholder="Cari pengaju berdasarkan nama, nomor telepon, alamat..."
                     value={searchInquiryTerm}
                     onChange={(e) => setSearchInquiryTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border border-gray-200 rounded-xl text-sm focus:outline-none"
+                    className="w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
                   />
-                </div>
-                <div>
-                  <select
-                    value={inquiryTypeFilter}
-                    onChange={(e: any) => setInquiryTypeFilter(e.target.value)}
-                    className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-semibold"
-                  >
-                    <option value="all">Semua Tipe Layanan</option>
-                    <option value="titip-jual">Titip Jual / Sewa</option>
-                    <option value="titip-cari">Titip Cari</option>
-                    <option value="kontak">Kontak / Konsultasi</option>
-                  </select>
                 </div>
               </div>
 
               {/* Inquiries list */}
               {dataLoading ? (
                 <div className="text-center py-20 text-gray-500 font-semibold">Memuat data pengajuan...</div>
-              ) : filteredInquiries.length > 0 ? (
+              ) : filteredInquiriesJual.length > 0 ? (
                 <div className="space-y-4">
-                  {filteredInquiries.map((inq) => (
+                  {filteredInquiriesJual.map((inq) => (
                     <div 
                       key={inq.id}
-                      className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow transition relative"
+                      className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow transition relative animate-in fade-in duration-200"
                     >
                       {/* Top Header Row */}
                       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-4 mb-4">
                         <div className="flex items-center gap-2.5">
-                          <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded border ${
-                            inq.type === 'titip-jual' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white' : 
-                            inq.type === 'titip-cari' ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white' :
-                            'bg-gradient-to-r from-teal-500 to-emerald-600 text-white'
-                          }`}>
-                            {inq.type === 'titip-jual' ? 'Titip Jual/Sewa' : inq.type === 'titip-cari' ? 'Titip Cari' : 'Kontak'}
+                          <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded border bg-gradient-to-r from-orange-500 to-amber-600 text-white">
+                            Titip Jual/Sewa
                           </span>
                           <span className="text-xs text-gray-400">
                             {new Date(inq.timestamp).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}
@@ -908,7 +1275,7 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
                             <span className="block text-xs text-gray-600 font-semibold">{inq.phone}</span>
                             <div className="pt-2">
                               <a 
-                                href={`https://wa.me/${inq.phone.replace(/[^0-9]/g, '')}`} 
+                                href={`https://wa.me/${inq.phone.replace(/[^0-9]/g, '')}?text=Halo%20${encodeURIComponent(inq.name)},%20saya%20Hadi%20dari%20Uncle%20Hadi%20Property.%20Saya%20melihat%20pengajuan%20titip%20jual%20Anda.`} 
                                 target="_blank" 
                                 rel="noopener noreferrer" 
                                 className="inline-flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-3xs uppercase tracking-wider px-3 py-2 rounded-lg transition"
@@ -922,10 +1289,9 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
 
                         {/* Details content column */}
                         <div className="md:col-span-2 space-y-3">
-                          <span className="block text-2xs font-extrabold uppercase text-gray-400 tracking-wider">Spesifikasi Permohonan</span>
+                          <span className="block text-2xs font-extrabold uppercase text-gray-400 tracking-wider">Spesifikasi Properti</span>
                           
-                          {/* Titip Jual Spec Display */}
-                          {inq.type === 'titip-jual' && inq.details && (
+                          {inq.details && (
                             <div className="grid grid-cols-2 gap-3 bg-slate-50 p-4 rounded-xl text-xs text-gray-700 border border-gray-100">
                               <div className="col-span-2">
                                 <strong className="text-gray-400 block uppercase text-3xs">Alamat Properti:</strong>
@@ -948,18 +1314,108 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
                                 <span className="font-semibold text-slate-800">{inq.details.buildingArea} m² ({inq.details.floors} Lantai)</span>
                               </div>
                               <div>
-                                <strong className="text-gray-400 block uppercase text-3xs">Kamars:</strong>
+                                <strong className="text-gray-400 block uppercase text-3xs">Kamar:</strong>
                                 <span className="font-semibold text-slate-800">{inq.details.bedrooms} KT / {inq.details.bathrooms} KM</span>
                               </div>
                               <div>
-                                <strong className="text-gray-400 block uppercase text-3xs">Kelistrikan & Air:</strong>
+                                <strong className="text-gray-400 block uppercase text-3xs">Kelisrikan & Air:</strong>
                                 <span className="font-semibold text-slate-800">{inq.details.electricity} / {inq.details.water}</span>
                               </div>
                             </div>
                           )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-20 bg-white border border-dashed rounded-3xl p-8 animate-in fade-in duration-200">
+                  <FileText className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500 font-semibold text-sm">Tidak ada permohonan titip jual</p>
+                  <p className="text-xs text-gray-400 mt-1">Belum ada pemohon titip jual yang mendaftarkan formulir.</p>
+                </div>
+              )}
+            </div>
+          )}
 
-                          {/* Titip Cari Spec Display */}
-                          {inq.type === 'titip-cari' && inq.details && (
+          {/* SubTab 2B: Monitoring Titip Beli */}
+          {activeSubTab === 'inquiries_beli' && (
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-2xl font-black text-[#0F172A] tracking-tight">Permohonan Titip Beli / Cari Properti</h1>
+                <p className="text-xs text-gray-500">Monitor dan kelola setiap kebutuhan cari properti dari calon pembeli secara transparan.</p>
+              </div>
+
+              {/* Filtering and search widgets */}
+              <div className="bg-white rounded-2xl shadow-xs border border-gray-100 p-4">
+                <div className="relative">
+                  <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Cari pengaju berdasarkan nama, nomor telepon, wilayah dicari..."
+                    value={searchInquiryTerm}
+                    onChange={(e) => setSearchInquiryTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                  />
+                </div>
+              </div>
+
+              {/* Inquiries list */}
+              {dataLoading ? (
+                <div className="text-center py-20 text-gray-500 font-semibold">Memuat data pengajuan...</div>
+              ) : filteredInquiriesBeli.length > 0 ? (
+                <div className="space-y-4">
+                  {filteredInquiriesBeli.map((inq) => (
+                    <div 
+                      key={inq.id}
+                      className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow transition relative animate-in fade-in duration-200"
+                    >
+                      {/* Top Header Row */}
+                      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-4 mb-4">
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded border bg-gradient-to-r from-indigo-500 to-violet-600 text-white">
+                            Titip Cari/Beli
+                          </span>
+                          <span className="text-xs text-gray-400">
+                            {new Date(inq.timestamp).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteInquiry(inq.id)}
+                          className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-xl transition"
+                          title="Hapus Log"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+
+                      {/* Content details split */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* Pengaju Info Column */}
+                        <div className="space-y-2 border-r border-gray-100/80 pr-2">
+                          <span className="block text-2xs font-extrabold uppercase text-gray-400 tracking-wider">Identitas Pengaju</span>
+                          <div className="space-y-1.5">
+                            <span className="block text-base font-black text-slate-900">{inq.name}</span>
+                            <span className="block text-xs text-gray-600 font-semibold">{inq.phone}</span>
+                            <div className="pt-2">
+                              <a 
+                                href={`https://wa.me/${inq.phone.replace(/[^0-9]/g, '')}?text=Halo%20${encodeURIComponent(inq.name)},%20saya%20Hadi%20dari%20Uncle%20Hadi%20Property.%20Saya%20melihat%20minat%20beli%20Anda.`} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="inline-flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-3xs uppercase tracking-wider px-3 py-2 rounded-lg transition"
+                              >
+                                <MessageSquare className="h-3.5 w-3.5" />
+                                Hubungi via WA
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Details content column */}
+                        <div className="md:col-span-2 space-y-3">
+                          <span className="block text-2xs font-extrabold uppercase text-gray-400 tracking-wider">Kriteria Pembelian</span>
+                          
+                          {inq.details && (
                             <div className="grid grid-cols-2 gap-3 bg-slate-50 p-4 rounded-xl text-xs text-gray-700 border border-gray-100">
                               <div>
                                 <strong className="text-gray-400 block uppercase text-3xs">Tipe Layanan:</strong>
@@ -983,42 +1439,305 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
                               </div>
                             </div>
                           )}
-
-                          {/* Kontak Spec Display */}
-                          {inq.type === 'kontak' && inq.details && (
-                            <div className="bg-slate-50 p-4 rounded-xl text-xs text-gray-700 border border-gray-100 space-y-2">
-                              <div>
-                                <strong className="text-gray-400 block uppercase text-3xs">Topik Konsultasi:</strong>
-                                <span className="font-bold text-slate-800">{inq.details.subject}</span>
-                              </div>
-                              <div>
-                                <strong className="text-gray-400 block uppercase text-3xs">Pesan:</strong>
-                                <span className="block font-medium text-slate-700 leading-relaxed italic whitespace-pre-line bg-white p-2.5 rounded-lg border border-gray-200 mt-1">"{inq.details.message}"</span>
-                              </div>
-                            </div>
-                          )}
-
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-20 bg-white border border-dashed rounded-3xl p-8">
-                  <FileText className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500 font-semibold text-sm">Tidak ada log pengajuan</p>
-                  <p className="text-xs text-gray-400 mt-1">Belum ada pengunjung yang mendaftarkan formulir atau mengirim log.</p>
+                <div className="text-center py-20 bg-white border border-dashed rounded-3xl p-8 animate-in fade-in duration-200">
+                  <Search className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500 font-semibold text-sm">Tidak ada permohonan titip beli</p>
+                  <p className="text-xs text-gray-400 mt-1">Belum ada pemohon titip beli yang mendaftarkan formulir.</p>
                 </div>
               )}
             </div>
           )}
 
-          {/* SubTab 3: Profil Founder */}
-          {activeSubTab === 'founder' && (
+          {/* SubTab 2C: Monitoring Pesan Kontak */}
+          {activeSubTab === 'inquiries_kontak' && (
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-2xl font-black text-[#0F172A] tracking-tight">Pesan Kontak & Konsultasi</h1>
+                <p className="text-xs text-gray-500">Monitor dan kelola setiap pesan kontak langsung maupun permohonan konsultasi dari pengunjung.</p>
+              </div>
+
+              {/* Filtering and search widgets */}
+              <div className="bg-white rounded-2xl shadow-xs border border-gray-100 p-4">
+                <div className="relative">
+                  <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Cari pengaju berdasarkan nama, nomor telepon, pesan..."
+                    value={searchInquiryTerm}
+                    onChange={(e) => setSearchInquiryTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                  />
+                </div>
+              </div>
+
+              {/* Inquiries list */}
+              {dataLoading ? (
+                <div className="text-center py-20 text-gray-500 font-semibold">Memuat data pengajuan...</div>
+              ) : filteredInquiriesKontak.length > 0 ? (
+                <div className="space-y-4">
+                  {filteredInquiriesKontak.map((inq) => (
+                    <div 
+                      key={inq.id}
+                      className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow transition relative animate-in fade-in duration-200"
+                    >
+                      {/* Top Header Row */}
+                      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-4 mb-4">
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded border bg-gradient-to-r from-teal-500 to-emerald-600 text-white">
+                            Kontak/Pesan
+                          </span>
+                          <span className="text-xs text-gray-400">
+                            {new Date(inq.timestamp).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteInquiry(inq.id)}
+                          className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-xl transition"
+                          title="Hapus Log"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+
+                      {/* Content details split */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* Pengaju Info Column */}
+                        <div className="space-y-2 border-r border-gray-100/80 pr-2">
+                          <span className="block text-2xs font-extrabold uppercase text-gray-400 tracking-wider">Identitas Pengaju</span>
+                          <div className="space-y-1.5">
+                            <span className="block text-base font-black text-slate-900">{inq.name}</span>
+                            <span className="block text-xs text-gray-600 font-semibold">{inq.phone}</span>
+                            <div className="pt-2">
+                              <a 
+                                href={`https://wa.me/${inq.phone.replace(/[^0-9]/g, '')}?text=Halo%20${encodeURIComponent(inq.name)},%20saya%20Hadi%20dari%20Uncle%20Hadi%20Property.`} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="inline-flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-3xs uppercase tracking-wider px-3 py-2 rounded-lg transition"
+                              >
+                                <MessageSquare className="h-3.5 w-3.5" />
+                                Hubungi via WA
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Details content column */}
+                        <div className="md:col-span-2 space-y-3">
+                          <span className="block text-2xs font-extrabold uppercase text-gray-400 tracking-wider">Pesan Masuk</span>
+                          
+                          {inq.details && (
+                            <div className="bg-slate-50 p-4 rounded-xl text-xs text-gray-700 border border-gray-100 space-y-2">
+                              <div>
+                                <strong className="text-gray-400 block uppercase text-3xs">Topik Konsultasi:</strong>
+                                <span className="font-bold text-slate-800">{inq.details.subject}</span>
+                              </div>
+                              <div>
+                                <strong className="text-gray-400 block uppercase text-3xs">Isi Pesan:</strong>
+                                <span className="block font-medium text-slate-700 leading-relaxed italic whitespace-pre-line bg-white p-2.5 rounded-lg border border-gray-200 mt-1">"{inq.details.message}"</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-20 bg-white border border-dashed rounded-3xl p-8 animate-in fade-in duration-200">
+                  <MessageSquare className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500 font-semibold text-sm">Tidak ada pesan kontak</p>
+                  <p className="text-xs text-gray-400 mt-1">Belum ada pesan masuk dari form hubungi kami.</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* SubTab 2D: Manajemen Artikel Edukasi */}
+          {activeSubTab === 'articles' && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl font-black text-[#0F172A] tracking-tight">Manajemen Artikel Edukasi</h1>
+                  <p className="text-xs text-gray-500">Tulis, edit, hapus, dan unggah foto artikel edukasi properti yang akan dibaca pengunjung web.</p>
+                </div>
+                <button
+                  onClick={handleOpenAddArticle}
+                  className="bg-[#D4A017] hover:bg-[#C29014] text-[#0F172A] font-extrabold text-xs px-5 py-3 rounded-xl transition shadow flex items-center justify-center gap-1.5 self-start sm:self-auto"
+                >
+                  <Plus className="h-4 w-4" />
+                  Tambah Artikel Baru
+                </button>
+              </div>
+
+              {/* Search article bar */}
+              <div className="bg-white rounded-2xl shadow-xs border border-gray-100 p-4">
+                <div className="relative">
+                  <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Cari artikel berdasarkan judul atau kategori..."
+                    value={searchArticleTerm}
+                    onChange={(e) => setSearchArticleTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                  />
+                </div>
+              </div>
+
+              {/* Article table */}
+              {filteredArticles.length > 0 ? (
+                <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden animate-in fade-in duration-200">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-gray-100 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
+                          <th className="py-4 px-6">Foto & Judul</th>
+                          <th className="py-4 px-6">Kategori</th>
+                          <th className="py-4 px-6">Tanggal Upload</th>
+                          <th className="py-4 px-6">Waktu Baca</th>
+                          <th className="py-4 px-6 text-right">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100 text-sm">
+                        {filteredArticles.map((art) => (
+                          <tr key={art.id} className="hover:bg-slate-50/50 transition">
+                            <td className="py-4 px-6">
+                              <div className="flex items-center gap-4">
+                                <img
+                                  src={art.image}
+                                  alt={art.title}
+                                  className="w-16 h-12 rounded-lg object-cover shrink-0 border border-gray-100"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=120&q=80';
+                                  }}
+                                />
+                                <div className="max-w-md">
+                                  <span className="block font-bold text-gray-900 line-clamp-1">{art.title}</span>
+                                  <span className="block text-2xs text-gray-400 line-clamp-1 mt-0.5">{art.summary}</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-4 px-6">
+                              <span className="inline-block text-[10px] font-extrabold uppercase px-2 py-1 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                                {art.category}
+                              </span>
+                            </td>
+                            <td className="py-4 px-6 text-gray-500 text-xs">
+                              {art.date}
+                            </td>
+                            <td className="py-4 px-6 text-gray-900 font-semibold text-xs">
+                              {art.readTime}
+                            </td>
+                            <td className="py-4 px-6 text-right whitespace-nowrap">
+                              <div className="flex items-center justify-end gap-2">
+                                <button
+                                  onClick={() => handleOpenEditArticle(art)}
+                                  className="p-2 bg-slate-100 hover:bg-[#D4A017] hover:text-[#0F172A] rounded-lg transition"
+                                  title="Edit Artikel"
+                                >
+                                  <Edit2 className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteArticle(art.id)}
+                                  className="p-2 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white rounded-lg transition"
+                                  title="Hapus Artikel"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-20 bg-white border border-dashed rounded-3xl p-8 animate-in fade-in duration-200">
+                  <BookOpen className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500 font-semibold text-sm">Tidak ada artikel yang ditemukan</p>
+                  <p className="text-xs text-gray-400 mt-1">Coba tulis artikel edukasi baru pertama Anda!</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* SubTab 2E: Konfigurasi AI Property Assistant */}
+          {activeSubTab === 'ai-property' && (
+            <div className="space-y-6 max-w-4xl animate-in fade-in duration-200">
+              <div>
+                <h1 className="text-2xl font-black text-[#0F172A] tracking-tight">Pengaturan Asisten AI (Uncle Hadi AI)</h1>
+                <p className="text-xs text-gray-500">Sesuaikan kepribadian, instruksi sistem, promosi unit, atau cara komunikasi yang dipakai bot AI Anda saat mengobrol dengan calon pembeli.</p>
+              </div>
+
+              <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-md border border-gray-100">
+                <form onSubmit={handleSaveFounderSettings} className="space-y-6">
+                  {settingsError && (
+                    <div className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-xl text-xs flex items-start gap-2.5">
+                      <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                      <span>{settingsError}</span>
+                    </div>
+                  )}
+
+                  {settingsSuccess && (
+                    <div className="bg-emerald-50 border border-emerald-200 text-emerald-600 p-4 rounded-xl text-xs flex items-start gap-2.5">
+                      <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
+                      <span>{settingsSuccess}</span>
+                    </div>
+                  )}
+
+                  <div className="space-y-3">
+                    <label className="block text-xs font-black text-[#0F172A] uppercase tracking-wider">Instruksi Sistem AI (System Prompt / Persona)</label>
+                    <p className="text-2xs text-gray-500 leading-relaxed">
+                      Ubah teks di bawah untuk merestrukturisasi cara Uncle Hadi AI menjawab pertanyaan. Anda bisa menginstruksikannya mempromosikan unit tertentu, melarang menjawab di luar lingkup properti, menggunakan bahasa kasual atau formal, dll.
+                    </p>
+                    <textarea
+                      rows={14}
+                      value={systemInstruction}
+                      onChange={(e) => setSystemInstruction(e.target.value)}
+                      placeholder="Masukkan instruksi khusus untuk asisten AI di sini..."
+                      className="w-full bg-[#F8FAFC] border border-gray-200 rounded-2xl p-4 text-xs text-slate-800 font-mono focus:outline-none focus:ring-2 focus:ring-[#D4A017] leading-relaxed"
+                    />
+                  </div>
+
+                  <div className="flex flex-wrap gap-3 pt-2">
+                    <button
+                      type="submit"
+                      disabled={isSavingSettings}
+                      className="bg-[#0F172A] hover:bg-[#1E293B] text-[#D4A017] font-black text-xs px-6 py-3.5 rounded-xl transition shadow flex items-center justify-center gap-2"
+                    >
+                      {isSavingSettings ? 'Menyimpan...' : 'Simpan Prompt AI'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        triggerConfirm('Apakah Anda yakin ingin mengembalikan instruksi AI ke default bawaan pabrik?', () => {
+                          setSystemInstruction(
+                            `Anda adalah "Uncle Hadi AI", asisten properti virtual berlisensi, jujur, amanah, dan jenaka yang mewakili Hadi Sukmono (Uncle Hadi), agen real estat legendaris Bekasi, Jakarta Timur, Cikarang, dan sekitarnya.\n\nFokus utama Anda:\n1. Bantu pengguna mencari unit hunian ideal, ruko produktif, tanah strategis, atau KPR.\n2. Berikan informasi transparan, detail teknis jujur, and hitungan finansial cerdas.\n3. Pertahankan gaya bicara humoris, interaktif, penuh kearifan lokal, ramah, amanah, tanpa mengorbankan profesionalisme.\n4. Ajak pengguna menghubungi WhatsApp Uncle Hadi (+6281234567890) jika butuh kunjungan survey lapangan.`
+                          );
+                        });
+                      }}
+                      className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs px-5 py-3.5 rounded-xl transition"
+                    >
+                      Reset ke Default
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* SubTab 3: Logo & Tampilan Website */}
+          {activeSubTab === 'settings' && (
             <div className="space-y-6 max-w-4xl">
               <div>
-                <h1 className="text-2xl font-black text-[#0F172A] tracking-tight">Pengaturan & Konten Website</h1>
-                <p className="text-xs text-gray-500">Kelola foto, profil founder, slogan, nomor WhatsApp, serta gambar dan teks utama yang ditampilkan di seluruh website secara instan.</p>
+                <h1 className="text-2xl font-black text-[#0F172A] tracking-tight">Logo & Tampilan Website</h1>
+                <p className="text-xs text-gray-500">Kelola identitas merek, slogan, teks logo, serta gambar hero banner yang dipajang di halaman depan website.</p>
               </div>
 
               <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-md border border-gray-100">
@@ -1037,13 +1756,94 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
                     </div>
                   )}
 
-                  {/* 1. SEKSI HERO BANNER */}
+                  {/* 1A. IDENTITAS MEREK & LOGO WEBSITE */}
                   <div className="space-y-4 border-b border-gray-100 pb-6">
-                    <h3 className="text-sm font-black text-[#0F172A] border-l-4 border-[#D4A017] pl-3">1. Konfigurasi Hero Banner</h3>
+                    <h3 className="text-sm font-black text-[#0F172A] border-l-4 border-[#D4A017] pl-3">1A. Konfigurasi Identitas & Logo Merek</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Teks Utama Logo</label>
+                        <input
+                          type="text"
+                          value={logoText}
+                          onChange={(e) => setLogoText(e.target.value)}
+                          placeholder="Contoh: Uncle Hadi"
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Teks Suffix Samping Logo</label>
+                        <input
+                          type="text"
+                          value={logoColorText}
+                          onChange={(e) => setLogoColorText(e.target.value)}
+                          placeholder="Contoh: .Property"
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Slogan Singkat Di Header</label>
+                        <input
+                          type="text"
+                          value={logoSlogan}
+                          onChange={(e) => setLogoSlogan(e.target.value)}
+                          placeholder="Contoh: Teman Cari Property"
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Upload Logo Gambar */}
+                    <div className="pt-2">
+                      <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Gambar Logo Kustom (Opsional)</label>
+                      <div className="flex items-center gap-4">
+                        {logoImageUrl ? (
+                          <div className="w-16 h-16 rounded-xl border border-gray-200 overflow-hidden shrink-0 bg-slate-100 flex items-center justify-center">
+                            <img src={logoImageUrl} alt="Logo Preview" className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <div className="w-16 h-16 rounded-xl border border-dashed border-gray-200 shrink-0 flex items-center justify-center text-gray-300">
+                            <ImageIcon className="h-6 w-6" />
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleLogoUpload}
+                            className="hidden"
+                            id="upload-logo-img-input"
+                          />
+                          <label
+                            htmlFor="upload-logo-img-input"
+                            className="cursor-pointer inline-flex items-center gap-2 bg-[#0F172A] hover:bg-slate-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition"
+                          >
+                            <Upload className="h-3.5 w-3.5" />
+                            {uploadLogoLoading ? 'Mengunggah...' : 'Unggah Logo Kustom'}
+                          </label>
+                          <p className="text-3xs text-gray-400 mt-1">
+                            Disarankan rasio kotak (1:1), format PNG/JPG transparan. Jika diunggah, ini akan menggantikan icon bangunan default di header/footer.
+                          </p>
+                        </div>
+                        {logoImageUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setLogoImageUrl('')}
+                            className="text-red-500 hover:text-red-700 text-xs font-semibold"
+                          >
+                            Hapus
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 1B. SEKSI HERO BANNER - SLIDE 1 */}
+                  <div className="space-y-4 border-b border-gray-100 pb-6">
+                    <h3 className="text-sm font-black text-[#0F172A] border-l-4 border-[#D4A017] pl-3">1B. Hero Banner - Slide 1 (Utama)</h3>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Judul Utama Hero (Hero Title)</label>
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Judul Slide 1</label>
                         <input
                           type="text"
                           value={heroTitle}
@@ -1053,7 +1853,7 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
                       </div>
 
                       <div>
-                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Slogan Merek (Brand Slogan)</label>
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Badge Slogan Slide 1</label>
                         <input
                           type="text"
                           value={founderBrand}
@@ -1063,7 +1863,7 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
                       </div>
 
                       <div className="md:col-span-2">
-                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Sub-judul Hero (Hero Subtitle)</label>
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Sub-judul Slide 1</label>
                         <textarea
                           rows={2}
                           value={heroSubtitle}
@@ -1076,10 +1876,10 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
                     {/* Hero Background Image Upload & Preview */}
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center pt-2">
                       <div className="md:col-span-4 flex flex-col items-center justify-center p-3 bg-slate-50 rounded-2xl border border-gray-100 text-center">
-                        <span className="text-4xs font-extrabold text-gray-400 uppercase tracking-widest mb-2">Pratinjau Background Hero</span>
+                        <span className="text-4xs font-extrabold text-gray-400 uppercase tracking-widest mb-2">Pratinjau Slide 1</span>
                         <div className="w-full h-24 rounded-xl overflow-hidden shadow-inner bg-slate-200 relative border border-gray-200">
                           {heroBgImage ? (
-                            <img src={heroBgImage} alt="Hero Background" className="w-full h-full object-cover" />
+                            <img src={heroBgImage} alt="Hero Background" className="w-full h-full object-cover animate-in fade-in" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-gray-400 text-3xs">Kosong</div>
                           )}
@@ -1088,7 +1888,7 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
 
                       <div className="md:col-span-8 space-y-3">
                         <div>
-                          <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1">Unggah Foto Background Hero Baru</label>
+                          <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1">Unggah Foto Background Slide 1 Baru</label>
                           <div className="border border-dashed border-gray-200 hover:border-[#D4A017] rounded-xl p-3 text-center cursor-pointer relative transition bg-slate-50/50 group">
                             <input
                               type="file"
@@ -1103,7 +1903,7 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
                         </div>
 
                         <div>
-                          <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1">Atau URL Background Hero</label>
+                          <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1">Atau URL Background Slide 1</label>
                           <input
                             type="text"
                             placeholder="https://contoh.com/gambar.jpg"
@@ -1115,6 +1915,167 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
                       </div>
                     </div>
                   </div>
+
+                  {/* 1C. SEKSI HERO BANNER - SLIDE 2 */}
+                  <div className="space-y-4 border-b border-gray-100 pb-6">
+                    <h3 className="text-sm font-black text-[#0F172A] border-l-4 border-[#D4A017] pl-3">1C. Hero Banner - Slide 2</h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Judul Slide 2</label>
+                        <input
+                          type="text"
+                          value={slide2Title}
+                          onChange={(e) => setSlide2Title(e.target.value)}
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Badge Slogan Slide 2</label>
+                        <input
+                          type="text"
+                          value={slide2Badge}
+                          onChange={(e) => setSlide2Badge(e.target.value)}
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        />
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Sub-judul Slide 2</label>
+                        <textarea
+                          rows={2}
+                          value={slide2Subtitle}
+                          onChange={(e) => setSlide2Subtitle(e.target.value)}
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center pt-2">
+                      <div className="md:col-span-4 flex flex-col items-center justify-center p-3 bg-slate-50 rounded-2xl border border-gray-100 text-center">
+                        <span className="text-4xs font-extrabold text-gray-400 uppercase tracking-widest mb-2">Pratinjau Slide 2</span>
+                        <div className="w-full h-24 rounded-xl overflow-hidden shadow-inner bg-slate-200 relative border border-gray-200">
+                          {slide2Image ? (
+                            <img src={slide2Image} alt="Slide 2 Background" className="w-full h-full object-cover animate-in fade-in" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400 text-3xs">Kosong</div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="md:col-span-8">
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">URL Gambar Background Slide 2</label>
+                        <input
+                          type="text"
+                          placeholder="https://contoh.com/gambar.jpg"
+                          value={slide2Image}
+                          onChange={(e) => setSlide2Image(e.target.value)}
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 1D. SEKSI HERO BANNER - SLIDE 3 */}
+                  <div className="space-y-4 pb-4">
+                    <h3 className="text-sm font-black text-[#0F172A] border-l-4 border-[#D4A017] pl-3">1D. Hero Banner - Slide 3</h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Judul Slide 3</label>
+                        <input
+                          type="text"
+                          value={slide3Title}
+                          onChange={(e) => setSlide3Title(e.target.value)}
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Badge Slogan Slide 3</label>
+                        <input
+                          type="text"
+                          value={slide3Badge}
+                          onChange={(e) => setSlide3Badge(e.target.value)}
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        />
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Sub-judul Slide 3</label>
+                        <textarea
+                          rows={2}
+                          value={slide3Subtitle}
+                          onChange={(e) => setSlide3Subtitle(e.target.value)}
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center pt-2">
+                      <div className="md:col-span-4 flex flex-col items-center justify-center p-3 bg-slate-50 rounded-2xl border border-gray-100 text-center">
+                        <span className="text-4xs font-extrabold text-gray-400 uppercase tracking-widest mb-2">Pratinjau Slide 3</span>
+                        <div className="w-full h-24 rounded-xl overflow-hidden shadow-inner bg-slate-200 relative border border-gray-200">
+                          {slide3Image ? (
+                            <img src={slide3Image} alt="Slide 3 Background" className="w-full h-full object-cover animate-in fade-in" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400 text-3xs">Kosong</div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="md:col-span-8">
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">URL Gambar Background Slide 3</label>
+                        <input
+                          type="text"
+                          placeholder="https://contoh.com/gambar.jpg"
+                          value={slide3Image}
+                          onChange={(e) => setSlide3Image(e.target.value)}
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end pt-4 border-t border-gray-100">
+                    <button
+                      type="submit"
+                      disabled={isSavingSettings}
+                      className="bg-[#D4A017] hover:bg-[#C29014] text-[#0F172A] font-extrabold text-xs px-8 py-4 rounded-xl transition shadow-lg flex items-center justify-center gap-1.5 cursor-pointer disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none"
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                      {isSavingSettings ? 'Menyimpan...' : 'Simpan Tampilan Web'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* SubTab 3.5: Profil Founder */}
+          {activeSubTab === 'founder' && (
+            <div className="space-y-6 max-w-4xl">
+              <div>
+                <h1 className="text-2xl font-black text-[#0F172A] tracking-tight">Profil & Informasi Founder</h1>
+                <p className="text-xs text-gray-500">Kelola foto profil founder, kutipan sambutan, deskripsi biografi, serta kontak kantor agensi Anda secara instan.</p>
+              </div>
+
+              <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-md border border-gray-100">
+                <form onSubmit={handleSaveFounderSettings} className="space-y-8">
+                  {settingsError && (
+                    <div className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-xl text-xs flex items-start gap-2.5">
+                      <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                      <span>{settingsError}</span>
+                    </div>
+                  )}
+
+                  {settingsSuccess && (
+                    <div className="bg-emerald-50 border border-emerald-200 text-emerald-600 p-4 rounded-xl text-xs flex items-start gap-2.5">
+                      <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
+                      <span>{settingsSuccess}</span>
+                    </div>
+                  )}
 
                   {/* 2. SEKSI PROFIL FOUNDER */}
                   <div className="space-y-4 border-b border-gray-100 pb-6">
@@ -1148,7 +2109,7 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
                         <span className="text-4xs font-extrabold text-gray-400 uppercase tracking-widest mb-2">Foto Profil Founder</span>
                         <div className="w-24 h-24 rounded-full border-2 border-[#D4A017] overflow-hidden shadow-md bg-slate-200 relative">
                           {founderPhotoUrl ? (
-                            <img src={founderPhotoUrl} alt="Foto Founder" className="w-full h-full object-cover" />
+                            <img src={founderPhotoUrl} alt="Foto Founder" className="w-full h-full object-cover animate-in fade-in" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-gray-400"><User className="h-6 w-6" /></div>
                           )}
@@ -1237,16 +2198,48 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
 
                   {/* 4. KONTAK UTAMA */}
                   <div className="space-y-4 pb-4">
-                    <h3 className="text-sm font-black text-[#0F172A] border-l-4 border-[#D4A017] pl-3">4. Konfigurasi Kontak & WhatsApp</h3>
+                    <h3 className="text-sm font-black text-[#0F172A] border-l-4 border-[#D4A017] pl-3">4. Konfigurasi Kontak & Kantor (Footer & Info)</h3>
                     
-                    <div>
-                      <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Nomor WhatsApp Agen (Gunakan kode negara tanpa +, contoh: 6281234567890)</label>
-                      <input
-                        type="text"
-                        value={whatsAppNo}
-                        onChange={(e) => setWhatsAppNo(e.target.value)}
-                        className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Nomor WhatsApp Agen (Tanpa +, contoh: 6281234567890)</label>
+                        <input
+                          type="text"
+                          value={whatsAppNo}
+                          onChange={(e) => setWhatsAppNo(e.target.value)}
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Nomor Telepon Kantor (Format Bebas)</label>
+                        <input
+                          type="text"
+                          value={officePhone}
+                          onChange={(e) => setOfficePhone(e.target.value)}
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Email Kantor / Hubungi</label>
+                        <input
+                          type="email"
+                          value={officeEmail}
+                          onChange={(e) => setOfficeEmail(e.target.value)}
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        />
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <label className="block text-3xs font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Alamat Kantor Lengkap</label>
+                        <textarea
+                          rows={2}
+                          value={officeAddress}
+                          onChange={(e) => setOfficeAddress(e.target.value)}
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -1257,7 +2250,7 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
                       className="bg-[#D4A017] hover:bg-[#C29014] text-[#0F172A] font-extrabold text-xs px-8 py-4 rounded-xl transition shadow-lg flex items-center justify-center gap-1.5 cursor-pointer disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none"
                     >
                       <CheckCircle2 className="h-4 w-4" />
-                      {isSavingSettings ? 'Menyimpan Perubahan...' : 'Simpan Seluruh Perubahan Web'}
+                      {isSavingSettings ? 'Menyimpan Perubahan...' : 'Simpan Profil & Kontak'}
                     </button>
                   </div>
                 </form>
@@ -1625,6 +2618,56 @@ export default function AdminDashboard({ onBackToWebsite, onRefreshProperties, o
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Confirm Modal */}
+      {confirmModal && confirmModal.isOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-[#0F172A]/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full border border-gray-100 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="text-center space-y-4">
+              <div className="inline-flex p-3 bg-amber-50 text-[#D4A017] rounded-full">
+                <AlertCircle className="h-6 w-6" />
+              </div>
+              <h3 className="text-base font-black text-[#0F172A]">Konfirmasi Tindakan</h3>
+              <p className="text-xs text-gray-500 leading-relaxed">{confirmModal.message}</p>
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  onClick={() => setConfirmModal(null)}
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs py-3 rounded-xl transition"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={confirmModal.onConfirm}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs py-3 rounded-xl transition shadow-lg shadow-red-600/20"
+                >
+                  Yakin, Hapus
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Alert Modal */}
+      {alertModal && alertModal.isOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-[#0F172A]/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full border border-gray-100 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="text-center space-y-4">
+              <div className="inline-flex p-3 bg-red-50 text-red-600 rounded-full">
+                <AlertCircle className="h-6 w-6" />
+              </div>
+              <h3 className="text-base font-black text-[#0F172A]">Informasi</h3>
+              <p className="text-xs text-gray-500 leading-relaxed">{alertModal.message}</p>
+              <button
+                onClick={() => setAlertModal(null)}
+                className="w-full bg-[#0F172A] hover:bg-[#1E293B] text-[#D4A017] font-black text-xs py-3 rounded-xl transition"
+              >
+                Mengerti
+              </button>
+            </div>
           </div>
         </div>
       )}

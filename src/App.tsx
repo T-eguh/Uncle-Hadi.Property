@@ -10,13 +10,14 @@ import EdukasiSection from './components/EdukasiSection';
 import AIPropertyAssistant from './components/AIPropertyAssistant';
 import KontakSection from './components/KontakSection';
 import AdminDashboard from './components/AdminDashboard';
-import { Property } from './types';
+import { Property, Article } from './types';
 import { PhoneCall, X, MessageSquare, Info, Star, Lock, Eye, EyeOff, ShieldAlert, AlertCircle } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('beranda');
   const [isConsultationOpen, setIsConsultationOpen] = useState(false);
-  const [properties, setProperties] = useState<Property[]>([]);
+  const [properties, setProperties] = useState<Property[] | null>(null);
+  const [articles, setArticles] = useState<Article[] | null>(null);
   const [settings, setSettings] = useState({
     founderPhotoUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=350&h=350&q=80",
     founderName: "Hadi Sukmono",
@@ -29,7 +30,21 @@ export default function App() {
     heroTitle: "Membantu Menemukan Property yang Tepat untuk Investasi dan Hunian",
     heroSubtitle: "Saya membantu calon pembeli, penjual, dan investor property mendapatkan informasi yang jelas, transparan, dan terpercaya untuk wilayah Bekasi, Jakarta Timur, Cikarang, dan sekitarnya.",
     heroBgImage: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1920&q=80",
-    whatsAppNo: "6281234567890"
+    whatsAppNo: "6281234567890",
+    logoText: "Uncle Hadi",
+    logoColorText: ".Property",
+    logoSlogan: "Teman Cari Property",
+    slide2Badge: "Layanan Konsultasi Amanah & Berlisensi",
+    slide2Title: "Konsultasi Properti Jujur, Amanah & Pendampingan Sepenuh Hati",
+    slide2Subtitle: "Dapatkan solusi hunian ideal, ruko produktif, atau investasi tanah dengan bimbingan hukum yang aman, jujur, transparan, serta didampingi penuh hingga selesai akad.",
+    slide2Image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80",
+    slide3Badge: "Jasa Pemasaran & Titip Jual Digital Premium",
+    slide3Title: "Pasarkan Properti Anda Lebih Cepat dengan Strategi Digital Modern",
+    slide3Subtitle: "Layanan titip jual atau sewa properti premium untuk menjangkau ribuan calon pembeli potensial secara tertarget di wilayah Bekasi, Cikarang, dan Jakarta Timur.",
+    slide3Image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1920&q=80",
+    officeAddress: "Bekasi Timur, Bekasi, Jawa Barat (Samping Stasiun KRL Bekasi Timur)",
+    officeEmail: "hadi@unclehadi.property",
+    officePhone: "+62 812-3456-7890"
   });
 
   // Admin Login Modal States
@@ -40,9 +55,10 @@ export default function App() {
   const [loginError, setLoginError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  // Fetch dynamic properties catalog and settings on load
+  // Fetch dynamic properties catalog, articles, and settings on load
   useEffect(() => {
     fetchProperties();
+    fetchArticles();
     fetchSettings();
   }, []);
 
@@ -55,6 +71,18 @@ export default function App() {
       }
     } catch (err) {
       console.error('Failed to fetch properties dynamic catalog:', err);
+    }
+  };
+
+  const fetchArticles = async () => {
+    try {
+      const res = await fetch('/api/articles');
+      if (res.ok) {
+        const data = await res.json();
+        setArticles(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch articles:', err);
     }
   };
 
@@ -134,17 +162,20 @@ export default function App() {
     setIsConsultationOpen(true);
   };
 
-  // Return the Admin Dashboard in absolute full screen (no regular header/footer)
-  if (window.location.pathname === '/admin' || activeTab === 'admin') {
+  // Return the Admin Dashboard in absolute full screen (no regular website header/footer)
+  if (activeTab === 'admin') {
     return (
       <AdminDashboard 
         onBackToWebsite={() => {
-          window.history.pushState({}, '', '/');
+          fetchProperties();
+          fetchSettings();
+          fetchArticles();
           setActiveTab('beranda');
-          window.location.reload();
         }} 
         onRefreshProperties={fetchProperties} 
         onRefreshSettings={fetchSettings}
+        onRefreshArticles={fetchArticles}
+        articles={articles}
       />
     );
   }
@@ -157,6 +188,7 @@ export default function App() {
         activeTab={activeTab} 
         setActiveTab={handleSetTab} 
         onOpenConsultation={handleOpenConsultation} 
+        settings={settings}
       />
 
       {/* Main Screen Router */}
@@ -196,6 +228,7 @@ export default function App() {
         {activeTab === 'edukasi' && (
           <EdukasiSection 
             onNavigateToTab={setActiveTab} 
+            articles={articles}
           />
         )}
         {activeTab === 'ai-property' && (
@@ -210,6 +243,7 @@ export default function App() {
       <Footer 
         setActiveTab={handleSetTab} 
         onOpenConsultation={handleOpenConsultation} 
+        settings={settings}
       />
 
       {/* Global Consultation Modal Popup */}
