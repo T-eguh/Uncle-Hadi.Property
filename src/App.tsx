@@ -47,6 +47,13 @@ export default function App() {
     officePhone: "+62 812-3456-7890"
   });
 
+  // Catalog filter and sort settings synchronized from Navbar dropdowns
+  const [catalogCategoryFilter, setCatalogCategoryFilter] = useState('all');
+  const [catalogTypeFilter, setCatalogTypeFilter] = useState('all');
+  const [catalogPurposeFilter, setCatalogPurposeFilter] = useState('all');
+  const [catalogSortFilter, setCatalogSortFilter] = useState('default');
+  const [edukasiSearchTerm, setEdukasiSearchTerm] = useState('');
+
   // Admin Login Modal States
   const [isAdminLoginModalOpen, setIsAdminLoginModalOpen] = useState(false);
   const [adminUsername, setAdminUsername] = useState('');
@@ -152,7 +159,7 @@ export default function App() {
 
   // Helper to trigger direct WhatsApp conversation
   const handleDirectWhatsApp = () => {
-    const phone = "6281234567890"; // WhatsApp Uncle Hadi
+    const phone = settings?.whatsAppNo || "6281234567890"; // WhatsApp Uncle Hadi
     const text = encodeURIComponent("Halo Uncle Hadi, saya berkunjung ke website UncleHadi.Property dan ingin melakukan konsultasi gratis mengenai property.");
     window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
     setIsConsultationOpen(false);
@@ -189,6 +196,11 @@ export default function App() {
         setActiveTab={handleSetTab} 
         onOpenConsultation={handleOpenConsultation} 
         settings={settings}
+        setCatalogCategoryFilter={setCatalogCategoryFilter}
+        setCatalogTypeFilter={setCatalogTypeFilter}
+        setCatalogPurposeFilter={setCatalogPurposeFilter}
+        setCatalogSortFilter={setCatalogSortFilter}
+        setEdukasiSearchTerm={setEdukasiSearchTerm}
       />
 
       {/* Main Screen Router */}
@@ -213,29 +225,38 @@ export default function App() {
             onOpenConsultation={handleOpenConsultation} 
             onNavigateToTab={setActiveTab}
             properties={properties}
+            initialCategoryFilter={catalogCategoryFilter}
+            initialTypeFilter={catalogTypeFilter}
+            initialPurposeFilter={catalogPurposeFilter}
+            initialSortFilter={catalogSortFilter}
+            settings={settings}
           />
         )}
         {activeTab === 'titip-jual' && (
           <TitipJualForm 
             onOpenConsultation={handleOpenConsultation} 
+            settings={settings}
           />
         )}
         {activeTab === 'titip-cari' && (
           <TitipCariForm 
             onOpenConsultation={handleOpenConsultation} 
+            settings={settings}
           />
         )}
         {activeTab === 'edukasi' && (
           <EdukasiSection 
             onNavigateToTab={setActiveTab} 
             articles={articles}
+            initialSearchTerm={edukasiSearchTerm}
+            settings={settings}
           />
         )}
         {activeTab === 'ai-property' && (
           <AIPropertyAssistant />
         )}
         {activeTab === 'kontak' && (
-          <KontakSection />
+          <KontakSection settings={settings} />
         )}
       </main>
 
@@ -288,7 +309,7 @@ export default function App() {
               {/* Option 2: Live Chat with AI */}
               <button
                 onClick={() => {
-                  setActiveTab('ai-properti');
+                  setActiveTab('ai-property');
                   setIsConsultationOpen(false);
                 }}
                 className="w-full bg-[#0F172A] hover:bg-[#1E293B] text-white font-extrabold text-sm py-3.5 px-4 rounded-xl transition duration-200 shadow flex items-center justify-center gap-2 border border-[#D4A017]/30"
@@ -300,11 +321,11 @@ export default function App() {
 
               {/* Option 3: Phone call */}
               <a
-                href="tel:+6281234567890"
+                href={`tel:${settings?.officePhone || '+6281234567890'}`}
                 className="w-full bg-slate-100 hover:bg-slate-200 text-gray-700 font-bold text-sm py-3 px-4 rounded-xl transition duration-200 flex items-center justify-center gap-2 text-center"
                 id="btn-opt-phone"
               >
-                Telepon Langsung (+62 812-3456-7890)
+                Telepon Langsung ({settings?.officePhone || "+62 812-3456-7890"})
               </a>
             </div>
 

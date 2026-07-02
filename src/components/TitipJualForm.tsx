@@ -3,6 +3,9 @@ import { Send, Upload, CheckCircle, FileText, Phone, User, Landmark, HelpCircle,
 
 interface TitipJualFormProps {
   onOpenConsultation: () => void;
+  settings?: {
+    whatsAppNo?: string;
+  };
 }
 
 interface SubmittedListing {
@@ -15,7 +18,7 @@ interface SubmittedListing {
   propertyType: string;
 }
 
-export default function TitipJualForm({ onOpenConsultation }: TitipJualFormProps) {
+export default function TitipJualForm({ onOpenConsultation, settings }: TitipJualFormProps) {
   // Form States
   const [actionType, setActionType] = useState<'Jual' | 'Sewa'>('Jual');
   const [address, setAddress] = useState('');
@@ -171,7 +174,7 @@ export default function TitipJualForm({ onOpenConsultation }: TitipJualFormProps
 
   const handleSendToWhatsApp = () => {
     const formattedText = getFormattedListingText();
-    const phone = "6281234567890"; // WhatsApp Uncle Hadi
+    const phone = settings?.whatsAppNo || "6281234567890"; // WhatsApp Uncle Hadi
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(formattedText)}`, '_blank');
   };
 

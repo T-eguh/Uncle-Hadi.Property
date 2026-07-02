@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Search, BookOpen, Clock, Tag, ArrowRight, BookMarked, HelpCircle } from 'lucide-react';
 import { Article } from '../types';
 import { ARTICLES_DATA, THIRTY_ARTICLE_TITLES } from '../data';
@@ -6,20 +6,24 @@ import { ARTICLES_DATA, THIRTY_ARTICLE_TITLES } from '../data';
 interface EdukasiSectionProps {
   onNavigateToTab: (tabId: string) => void;
   articles?: Article[] | null;
+  initialSearchTerm?: string;
+  settings?: {
+    whatsAppNo?: string;
+  };
 }
 
-export default function EdukasiSection({ onNavigateToTab, articles }: EdukasiSectionProps) {
-  const [searchTerm, setSearchTerm] = useState('');
+export default function EdukasiSection({ onNavigateToTab, articles, initialSearchTerm = '', settings }: EdukasiSectionProps) {
+  const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+
+  // Synchronize internal search with parent search
+  useEffect(() => {
+    setSearchTerm(initialSearchTerm);
+  }, [initialSearchTerm]);
 
   // Construct full list of articles, preferring dynamic database articles first
   const allArticles: Article[] = useMemo(() => {
-    if (articles && articles.length > 0) {
-      return articles;
-    }
-    
-    // Fallback to static articles with 30 items if no database articles exist
-    return THIRTY_ARTICLE_TITLES.map((title, index) => {
+    const baseArticles = THIRTY_ARTICLE_TITLES.map((title, index) => {
       // If we have full detailed article text in ARTICLES_DATA, use it
       const detailed = ARTICLES_DATA.find(a => a.title.toLowerCase().trim() === title.toLowerCase().trim());
       if (detailed) return detailed;
@@ -29,7 +33,7 @@ export default function EdukasiSection({ onNavigateToTab, articles }: EdukasiSec
       const category = categories[index % categories.length];
       
       return {
-        id: `gen-art-${index}`,
+        id: `art-${index + 1}`,
         title,
         category,
         date: `${10 - (index % 10)} Juni 2026`,
@@ -50,6 +54,24 @@ Berikut poin-poin utama yang perlu Anda perhatikan:
         image: `https://images.unsplash.com/photo-${1560518883 + index % 10}-ce09059eeffa?auto=format&fit=crop&w=800&q=80`
       };
     });
+
+    const dbArticles = articles || [];
+
+    // Merge baseArticles and dbArticles. If dbArticle has matching id or title, use dbArticle.
+    const merged = baseArticles.map(baseArt => {
+      const dbArt = dbArticles.find(a => a.id === baseArt.id || a.title.toLowerCase().trim() === baseArt.title.toLowerCase().trim());
+      return dbArt ? dbArt : baseArt;
+    });
+
+    // Append any dbArticles that are completely new (no matching id AND no matching title in baseArticles)
+    dbArticles.forEach(dbArt => {
+      const existsInMerged = merged.some(m => m.id === dbArt.id || m.title.toLowerCase().trim() === dbArt.title.toLowerCase().trim());
+      if (!existsInMerged) {
+        merged.push(dbArt);
+      }
+    });
+
+    return merged;
   }, [articles]);
 
   const filteredArticles = useMemo(() => {
@@ -247,7 +269,7 @@ Berikut poin-poin utama yang perlu Anda perhatikan:
                       Tanya AI Properti
                     </button>
                     <a
-                      href="https://wa.me/6281234567890?text=Halo%20Uncle%20Hadi,%20saya%20ingin%20konsultasi%20seputar%20artikel%20edukasi."
+                      href={`https://wa.me/${settings?.whatsAppNo || '6281234567890'}?text=Halo%20Uncle%20Hadi,%20saya%20ingin%20konsultasi%20seputar%20artikel%20edukasi.`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition flex-1 text-center shadow"

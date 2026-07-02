@@ -1,11 +1,25 @@
 import React, { useState } from 'react';
 import { Phone, Mail, MapPin, Send, MessageSquare, Instagram, Facebook, Globe, Video, Clock } from 'lucide-react';
 
-export default function KontakSection() {
+interface KontakSectionProps {
+  settings?: {
+    whatsAppNo?: string;
+    officeAddress?: string;
+    officeEmail?: string;
+    officePhone?: string;
+  };
+}
+
+export default function KontakSection({ settings }: KontakSectionProps) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [subject, setSubject] = useState('Konsultasi Property');
   const [message, setMessage] = useState('');
+
+  const address = settings?.officeAddress || "Bekasi Timur, Bekasi, Jawa Barat (Samping Stasiun KRL Bekasi Timur)";
+  const email = settings?.officeEmail || "hadi@unclehadi.property";
+  const phoneNo = settings?.officePhone || "+62 812-3456-7890";
+  const whatsAppNumber = settings?.whatsAppNo || "6281234567890";
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,12 +53,11 @@ export default function KontakSection() {
     text += `*Topik:* ${subject}\n\n`;
     text += `*Pesan:* \n${message}`;
 
-    const waPhone = "6281234567890"; // WhatsApp Uncle Hadi
-    window.open(`https://wa.me/${waPhone}?text=${encodeURIComponent(text)}`, '_blank');
+    window.open(`https://wa.me/${whatsAppNumber}?text=${encodeURIComponent(text)}`, '_blank');
   };
 
   const socialChannels = [
-    { name: 'WhatsApp', detail: '+62 812-3456-7890', actionText: 'Hubungi via Chat', url: 'https://wa.me/6281234567890', colorClass: 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100', icon: MessageSquare },
+    { name: 'WhatsApp', detail: phoneNo, actionText: 'Hubungi via Chat', url: `https://wa.me/${whatsAppNumber}`, colorClass: 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100', icon: MessageSquare },
     { name: 'Instagram', detail: '@unclehadi.property', actionText: 'Kunjungi Profile', url: 'https://instagram.com', colorClass: 'bg-pink-50 text-pink-600 border-pink-100 hover:bg-pink-100', icon: Instagram },
     { name: 'TikTok', detail: '@unclehadi.property', actionText: 'Tonton Video Edukasi', url: 'https://tiktok.com', colorClass: 'bg-slate-50 text-slate-900 border-slate-200 hover:bg-slate-200', icon: Video },
     { name: 'Facebook Page', detail: 'Uncle Hadi Property', actionText: 'Kunjungi Page', url: 'https://facebook.com', colorClass: 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100', icon: Facebook },
@@ -85,8 +98,7 @@ export default function KontakSection() {
                   </div>
                   <div>
                     <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Lokasi Kantor Resmi</h4>
-                    <p className="text-sm text-gray-800 font-semibold mt-0.5">Bekasi Timur, Kota Bekasi</p>
-                    <p className="text-xs text-gray-500">Samping Stasiun KRL Bekasi Timur, Jawa Barat 17113</p>
+                    <p className="text-sm text-gray-800 font-semibold mt-0.5 leading-snug">{address}</p>
                   </div>
                 </div>
 
@@ -96,7 +108,7 @@ export default function KontakSection() {
                   </div>
                   <div>
                     <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Nomor WhatsApp Aktif</h4>
-                    <p className="text-sm text-gray-800 font-bold mt-0.5">+62 812-3456-7890</p>
+                    <p className="text-sm text-gray-800 font-bold mt-0.5">{phoneNo}</p>
                     <p className="text-xs text-gray-500">Pelayanan respon cepat setiap hari</p>
                   </div>
                 </div>
@@ -107,7 +119,7 @@ export default function KontakSection() {
                   </div>
                   <div>
                     <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Alamat Email Resmi</h4>
-                    <p className="text-sm text-gray-800 font-semibold mt-0.5">hadi@unclehadi.property</p>
+                    <p className="text-sm text-gray-800 font-semibold mt-0.5">{email}</p>
                     <p className="text-xs text-gray-500">Kirim berkas kerjasama developer di sini</p>
                   </div>
                 </div>
@@ -130,7 +142,7 @@ export default function KontakSection() {
                 <h4 className="text-xs font-bold text-[#0F172A]">Area Kerja Utama</h4>
                 <p className="text-3xs text-gray-400">Bekasi (Timur, Barat, Utara, Selatan), Cikarang, Tambun, Karawang, dan Jakarta Timur.</p>
                 <a
-                  href="https://maps.google.com/?q=Bekasi"
+                  href={`https://maps.google.com/?q=${encodeURIComponent(address)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs font-bold text-[#D4A017] inline-block hover:underline"

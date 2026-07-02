@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Search, MapPin, BedDouble, Bath, Square, ArrowUpRight, CheckCircle2, Navigation, Layers, Compass, Zap, Droplet } from 'lucide-react';
 import { Property } from '../types';
 import { PROPERTIES_DATA } from '../data';
@@ -7,17 +7,51 @@ interface PropertyCatalogProps {
   onOpenConsultation: () => void;
   onNavigateToTab: (tabId: string) => void;
   initialCategoryFilter?: string;
+  initialTypeFilter?: string;
+  initialPurposeFilter?: string;
+  initialSortFilter?: string;
   properties?: Property[] | null;
+  settings?: {
+    whatsAppNo?: string;
+  };
 }
 
-export default function PropertyCatalog({ onOpenConsultation, onNavigateToTab, initialCategoryFilter = 'all', properties }: PropertyCatalogProps) {
+export default function PropertyCatalog({ 
+  onOpenConsultation, 
+  onNavigateToTab, 
+  initialCategoryFilter = 'all', 
+  initialTypeFilter = 'all',
+  initialPurposeFilter = 'all',
+  initialSortFilter = 'default',
+  properties,
+  settings
+}: PropertyCatalogProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategoryFilter); // 'all', 'Primary', 'Secondary'
   const [selectedRegion, setSelectedRegion] = useState<string>('all'); 
-  const [selectedType, setSelectedType] = useState<string>('all'); // 'all', 'rumah hunian', 'apartement', 'ruko', 'tanah kavling'
+  const [selectedType, setSelectedType] = useState<string>(initialTypeFilter); // 'all', 'rumah hunian', 'apartement', 'ruko', 'tanah kavling'
   const [selectedPriceRange, setSelectedPriceRange] = useState<string>('all'); 
+  const [selectedPurpose, setSelectedPurpose] = useState<string>(initialPurposeFilter); // 'all', 'jual', 'sewa'
+  const [selectedSort, setSelectedSort] = useState<string>(initialSortFilter); // 'default', 'terbaru', 'unggulan'
 
   const [selectedPropertyDetail, setSelectedPropertyDetail] = useState<Property | null>(null);
+
+  // Synchronize internal state with parent-provided props on changes
+  useEffect(() => {
+    setSelectedCategory(initialCategoryFilter);
+  }, [initialCategoryFilter]);
+
+  useEffect(() => {
+    setSelectedType(initialTypeFilter);
+  }, [initialTypeFilter]);
+
+  useEffect(() => {
+    setSelectedPurpose(initialPurposeFilter);
+  }, [initialPurposeFilter]);
+
+  useEffect(() => {
+    setSelectedSort(initialSortFilter);
+  }, [initialSortFilter]);
 
   const regions = ['Jakarta', 'Jawa Barat', 'Jawa Tengah', 'Jawa Timur', 'Bali'];
   const propertyTypes = [
@@ -37,7 +71,7 @@ export default function PropertyCatalog({ onOpenConsultation, onNavigateToTab, i
   // Filtering Logic
   const filteredProperties = useMemo(() => {
     const list = (properties !== null && properties !== undefined) ? properties : PROPERTIES_DATA;
-    return list.filter((prop) => {
+    let result = list.filter((prop) => {
       // Search text match
       const matchesSearch = 
         prop.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -55,6 +89,11 @@ export default function PropertyCatalog({ onOpenConsultation, onNavigateToTab, i
       // Type match
       const matchesType = selectedType === 'all' || prop.type === selectedType;
 
+      // Transaction Purpose match (rentPrice indicates for rent, lack of it indicates for sale)
+      const matchesPurpose = 
+        selectedPurpose === 'all' || 
+        (selectedPurpose === 'jual' ? !prop.rentPrice : !!prop.rentPrice);
+
       // Price match
       let matchesPrice = true;
       if (selectedPriceRange === 'under_1b') {
@@ -67,12 +106,21 @@ export default function PropertyCatalog({ onOpenConsultation, onNavigateToTab, i
         matchesPrice = prop.price > 10000000000;
       }
 
-      return matchesSearch && matchesCategory && matchesRegion && matchesType && matchesPrice;
+      return matchesSearch && matchesCategory && matchesRegion && matchesType && matchesPurpose && matchesPrice;
     });
-  }, [searchTerm, selectedCategory, selectedRegion, selectedType, selectedPriceRange, properties]);
+
+    // Apply sorting methods
+    if (selectedSort === 'terbaru') {
+      result = [...result].sort((a, b) => b.id.localeCompare(a.id));
+    } else if (selectedSort === 'unggulan') {
+      result = [...result].sort((a, b) => b.price - a.price);
+    }
+
+    return result;
+  }, [searchTerm, selectedCategory, selectedRegion, selectedType, selectedPurpose, selectedPriceRange, selectedSort, properties]);
 
   const handleWhatsAppContact = (prop: Property) => {
-    const phone = "6281234567890"; // WhatsApp Uncle Hadi
+    const phone = settings?.whatsAppNo || "6281234567890"; // WhatsApp Uncle Hadi
     const encodedText = encodeURIComponent(prop.whatsappMessage);
     window.open(`https://wa.me/${phone}?text=${encodedText}`, '_blank');
   };
@@ -96,10 +144,10 @@ export default function PropertyCatalog({ onOpenConsultation, onNavigateToTab, i
 
         {/* Filter Widget */}
         <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-10" id="filters-widget-container">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4">
             
             {/* Search Input */}
-            <div className="lg:col-span-2 relative" id="filter-search-col">
+            <div className="xl:col-span-2 relative" id="filter-search-col">
               <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Cari Kata Kunci</label>
               <div className="relative">
                 <input
@@ -158,6 +206,36 @@ export default function PropertyCatalog({ onOpenConsultation, onNavigateToTab, i
                 {propertyTypes.map((type) => (
                   <option key={type.value} value={type.value}>{type.label}</option>
                 ))}
+              </select>
+            </div>
+
+            {/* Tipe Jual (Purpose) */}
+            <div id="filter-purpose-col">
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Tipe Jual</label>
+              <select
+                value={selectedPurpose}
+                onChange={(e) => setSelectedPurpose(e.target.value)}
+                className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#D4A017] focus:border-[#D4A017] transition-all font-medium text-gray-700"
+                id="filter-purpose-select"
+              >
+                <option value="all">Semua Tipe</option>
+                <option value="jual">Dijual</option>
+                <option value="sewa">Disewakan</option>
+              </select>
+            </div>
+
+            {/* Urutkan Berdasarkan */}
+            <div id="filter-sort-col">
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Urutkan</label>
+              <select
+                value={selectedSort}
+                onChange={(e) => setSelectedSort(e.target.value)}
+                className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#D4A017] focus:border-[#D4A017] transition-all font-medium text-gray-700"
+                id="filter-sort-select"
+              >
+                <option value="default">Default</option>
+                <option value="terbaru">Listing Terbaru</option>
+                <option value="unggulan">Harga Tertinggi</option>
               </select>
             </div>
           </div>

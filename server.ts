@@ -21,18 +21,18 @@ app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 const DB_PATH = path.join(process.cwd(), "data", "db.json");
 
 const DEFAULT_SETTINGS = {
-  founderPhotoUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=350&h=350&q=80",
+  founderPhotoUrl: "/uploads/1783011807123_WhatsAppImage2026-06-23at14.47.20.jpeg",
   founderName: "Hadi Sukmono",
-  founderTitle: "Founder & Agen Property Utama",
+  founderTitle: "Expert Advisor",
   founderBrand: "Uncle Hadi.Property – Teman Cari Property",
   aboutHeading: "Halo, Saya Hadi Sukmono. Selamat Datang di Uncle Hadi.Property",
-  aboutText1: "Saya adalah agen property yang berfokus membantu masyarakat menemukan rumah, apartemen, ruko, dan investasi properti yang sesuai kebutuhan Anda di Bekasi, Jakarta Timur, Cikarang, dan sekitarnya.",
-  aboutQuote: '"Saya percaya bahwa membeli atau menjual properti adalah salah satu keputusan terbesar dalam hidup yang membutuhkan informasi yang jelas, jujur, dan pendampingan yang tepat."',
-  aboutText2: "Melalui website ini, saya berbagi informasi property yang transparan, artikel edukasi yang mudah dipahami, serta layanan pemasaran properti digital premium bagi pemilik yang ingin menjual atau menyewakan asetnya secara cepat.",
+  aboutText1: "Saya adalah agen property yang berfokus membantu masyarakat menemukan rumah, apartemen, ruko, dan investasi properti yang sesuai kebutuhan Anda di daerah jakarta, jawa barat,jawa tengah,jawa timur dan bali.",
+  aboutQuote: '"Saya percaya bahwa setiap properti memiliki nilai lebih dari sekadar bangunan. Di balik setiap rumah, ruko, atau investasi, terdapat harapan, impian, dan masa depan yang ingin diwujudkan. Karena itu, Uncle Hadi Property hadir dengan komitmen untuk memberikan pelayanan yang jujur, transparan, dan profesional, sehingga setiap klien dapat mengambil keputusan dengan rasa aman dan penuh keyakinan."',
+  aboutText2: '"Bersama tim yang berpengalaman, kami terus berupaya menghadirkan pilihan properti terbaik serta membangun hubungan yang didasari kepercayaan dan kepuasan pelanggan. Bagi kami, keberhasilan tidak hanya diukur dari transaksi yang tercapai, tetapi juga dari kepercayaan yang terus tumbuh dan hubungan jangka panjang yang terjalin dengan setiap klien. Terima kasih telah mempercayakan perjalanan properti Anda kepada Uncle Hadi property"',
   heroTitle: "Membantu Menemukan Property yang Tepat untuk Investasi dan Hunian",
-  heroSubtitle: "Saya membantu calon pembeli, penjual, dan investor property mendapatkan informasi yang jelas, transparan, dan terpercaya untuk wilayah Bekasi, Jakarta Timur, Cikarang, dan sekitarnya.",
+  heroSubtitle: "Saya membantu calon pembeli, penjual, dan investor property mendapatkan informasi yang jelas, transparan, dan terpercaya untuk wilayah  jakarta, jawa barat,jawa tengah,jawa timur dan bali.",
   heroBgImage: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1920&q=80",
-  whatsAppNo: "6281234567890",
+  whatsAppNo: "6282112790005",
   logoText: "Uncle Hadi",
   logoColorText: ".Property",
   logoSlogan: "Teman Cari Property",
@@ -44,9 +44,10 @@ const DEFAULT_SETTINGS = {
   slide3Title: "Pasarkan Properti Anda Lebih Cepat dengan Strategi Digital Modern",
   slide3Subtitle: "Layanan titip jual atau sewa properti premium untuk menjangkau ribuan calon pembeli potensial secara tertarget di wilayah Bekasi, Cikarang, dan Jakarta Timur.",
   slide3Image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1920&q=80",
-  officeAddress: "Bekasi Timur, Bekasi, Jawa Barat (Samping Stasiun KRL Bekasi Timur)",
-  officeEmail: "hadi@unclehadi.property",
-  officePhone: "+62 812-3456-7890"
+  officeAddress: "Jl.Sedayu City Boulevard Raya Blok SCBD No.009, Cakung Barat Jakarta Timur",
+  officeEmail: "hadisukmono.xmsg@gmail.com",
+  officePhone: "6281387009749",
+  logoImageUrl: "/uploads/1783013173106_ChatGPT_Image_3_Jul_2026__00.19.37-removebg-preview.png"
 };
 
 const DEFAULT_PROPERTIES = [
@@ -405,10 +406,15 @@ function readDb() {
       const raw = fs.readFileSync(DB_PATH, "utf-8");
       const parsed = JSON.parse(raw);
       
-      parsed.settings = {
-        ...DEFAULT_SETTINGS,
-        ...(parsed.settings || {})
-      };
+      const mergedSettings = { ...DEFAULT_SETTINGS };
+      if (parsed.settings) {
+        for (const key of Object.keys(parsed.settings)) {
+          if (parsed.settings[key] !== undefined && parsed.settings[key] !== null && parsed.settings[key] !== "") {
+            mergedSettings[key] = parsed.settings[key];
+          }
+        }
+      }
+      parsed.settings = mergedSettings;
       
       if (!parsed.properties || parsed.properties.length === 0) {
         parsed.properties = DEFAULT_PROPERTIES;
@@ -472,21 +478,51 @@ app.post("/api/admin/login", (req, res) => {
   const cleanUsername = (username || "").trim().toLowerCase();
   const cleanPassword = (password || "").trim();
 
-  // Allowed usernames (case-insensitive)
+  // Allowed usernames (case-insensitive) including client-specific entries for Teguh
   const envUser = (process.env.ADMIN_USERNAME || "admin").trim().toLowerCase();
-  const allowedUsernames = [envUser, "admin", "hadi"];
+  const allowedUsernames = [
+    envUser, 
+    "admin", 
+    "hadi", 
+    "teguh", 
+    "teguhardiansyah475@gmail.com", 
+    "teguhardiansyah475"
+  ];
 
   // Allowed passwords
   const envPass = (process.env.ADMIN_PASSWORD || "hadi_property_aman_2026").trim();
-  const allowedPasswords = [envPass, "hadi_property_aman_2026", "hadi123", "admin", "123456"];
+  const allowedPasswords = [
+    envPass, 
+    "hadi_property_aman_2026", 
+    "hadi123", 
+    "admin", 
+    "123456",
+    "teguh123"
+  ];
 
   if (allowedUsernames.includes(cleanUsername) && allowedPasswords.includes(cleanPassword)) {
     const token = "hadi_token_" + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
     activeSessions.add(token);
     res.json({ success: true, token });
   } else {
-    res.status(401).json({ error: "Username atau Password salah! Gunakan username: admin dan password: hadi_property_aman_2026 atau hadi123" });
+    res.status(401).json({ 
+      error: "Username atau Password salah! Hubungi developer atau gunakan default (Username: admin / Password: hadi_property_aman_2026 atau hadi123)" 
+    });
   }
+});
+
+// Download dynamic database JSON (admin-only) - allows static-CMS workflow
+app.get("/api/admin/download-db", (req, res) => {
+  const token = (req.query.token as string) || (req.headers.authorization || "").replace("Bearer ", "");
+  
+  if (!isValidToken(token)) {
+    return res.status(403).json({ error: "Akses ditolak. Sesi tidak valid atau telah berakhir!" });
+  }
+
+  const db = readDb();
+  res.setHeader("Content-disposition", "attachment; filename=db.json");
+  res.setHeader("Content-type", "application/json");
+  res.send(JSON.stringify(db, null, 2));
 });
 
 // Logout endpoint
@@ -640,7 +676,12 @@ app.post("/api/admin/articles", (req, res) => {
         readTime: articleData.readTime || "5 menit baca"
       };
     } else {
-      return res.status(404).json({ error: "Artikel tidak ditemukan!" });
+      // Allow inserting fallback/dynamic articles when first edited
+      db.articles.push({
+        ...articleData,
+        date: articleData.date || currentDateStr,
+        readTime: articleData.readTime || "5 menit baca"
+      });
     }
   } else {
     // Add new article
@@ -725,8 +766,8 @@ app.delete("/api/admin/inquiries/:id", (req, res) => {
   res.json({ success: true, inquiries: db.inquiries });
 });
 
-// Handle custom image file upload via Base64 (saving to uploads folder)
-app.post("/api/admin/upload", (req, res) => {
+// Handle custom image file upload via Base64 (saving to uploads folder or cloud)
+app.post("/api/admin/upload", async (req, res) => {
   const authHeader = req.headers.authorization;
   const token = authHeader ? authHeader.replace("Bearer ", "") : "";
   if (!isValidToken(token)) {
@@ -739,6 +780,34 @@ app.post("/api/admin/upload", (req, res) => {
   }
 
   try {
+    // Check if ImgBB API key is configured for Vercel/production cloud upload
+    const imgbbKey = process.env.IMGBB_API_KEY;
+    if (imgbbKey) {
+      console.log("Using ImgBB for cloud image upload...");
+      const base64Image = base64Data.split(";base64,").pop();
+      const formData = new URLSearchParams();
+      formData.append("image", base64Image || "");
+
+      const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {
+        method: "POST",
+        body: formData,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json() as any;
+        if (result.success && result?.data?.url) {
+          console.log("ImgBB cloud upload success:", result.data.url);
+          return res.json({ success: true, imageUrl: result.data.url });
+        }
+      }
+      
+      const errText = await response.text();
+      console.error("ImgBB upload failed, falling back to local storage. Error details:", errText);
+    }
+
     const uploadsDir = path.join(process.cwd(), "uploads");
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true });
@@ -886,4 +955,8 @@ async function startServer() {
   });
 }
 
-startServer();
+if (!process.env.VERCEL) {
+  startServer();
+}
+
+export default app;

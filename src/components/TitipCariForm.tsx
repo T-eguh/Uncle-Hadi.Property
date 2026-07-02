@@ -3,9 +3,12 @@ import { Send, CheckCircle, Search, Sparkles, User, Phone, MapPin, Compass, Info
 
 interface TitipCariFormProps {
   onOpenConsultation: () => void;
+  settings?: {
+    whatsAppNo?: string;
+  };
 }
 
-export default function TitipCariForm({ onOpenConsultation }: TitipCariFormProps) {
+export default function TitipCariForm({ onOpenConsultation, settings }: TitipCariFormProps) {
   // Form states
   const [dealType, setDealType] = useState<'Beli' | 'Sewa'>('Beli');
   const [propertyType, setPropertyType] = useState('rumah hunian');
@@ -121,7 +124,7 @@ export default function TitipCariForm({ onOpenConsultation }: TitipCariFormProps
 
   const handleSendToWhatsApp = () => {
     const text = getFormattedSearchText();
-    const phone = "6281234567890"; // WhatsApp Uncle Hadi
+    const phone = settings?.whatsAppNo || "6281234567890"; // WhatsApp Uncle Hadi
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
   };
 

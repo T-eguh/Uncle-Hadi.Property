@@ -4,9 +4,10 @@ import {
   Trash2, Plus, Edit2, Upload, AlertCircle, Eye, 
   X, MapPin, Compass, Zap, Droplet, User, Phone, 
   Search, ShieldAlert, ArrowLeft, ExternalLink, MessageSquare,
-  BookOpen, Sparkles, Settings, Image as ImageIcon
+  BookOpen, Sparkles, Settings, Image as ImageIcon, Download
 } from 'lucide-react';
 import { Property, Article } from '../types';
+import { ARTICLES_DATA, THIRTY_ARTICLE_TITLES } from '../data';
 
 interface AdminDashboardProps {
   onBackToWebsite: () => void;
@@ -829,8 +830,57 @@ export default function AdminDashboard({
       (inq.details?.message && inq.details.message.toLowerCase().includes(term));
   });
 
+  // Merge database articles with thirty fallback titles so the admin can manage and edit ALL 30 of them!
+  const allArticlesList: Article[] = React.useMemo(() => {
+    const baseArticles = THIRTY_ARTICLE_TITLES.map((title, index) => {
+      const detailed = ARTICLES_DATA.find(a => a.title.toLowerCase().trim() === title.toLowerCase().trim());
+      if (detailed) return { ...detailed, id: `art-${index + 1}` };
+
+      const categories = ['Edukasi Properti', 'Perencanaan KPR', 'Tips Penjualan', 'Investasi Properti', 'Legalitas & Pajak'];
+      const category = categories[index % categories.length];
+      
+      return {
+        id: `art-${index + 1}`,
+        title,
+        category,
+        date: `${10 - (index % 10)} Juni 2026`,
+        readTime: `${4 + (index % 3)} menit baca`,
+        summary: `Edukasi penting seputar "${title}". Pelajari panduan praktis, tips and trik, serta regulasi terbaru dari Uncle Hadi untuk hasil terbaik.`,
+        content: `### Pentingnya Memahami: ${title}
+
+Topik ini merupakan bagian krusial dari pemahaman pasar properti modern di Indonesia, khususnya untuk wilayah Bekasi, Jakarta Timur, Cikarang, dan sekitarnya. 
+
+Berikut poin-poin utama yang perlu Anda perhatikan:
+
+1. **Persiapan Matang**: Selalu lakukan riset mendalam sebelum mengambil keputusan transaksi, baik dalam hal legalitas sertifikat (SHM/HGB) maupun kelayakan konstruksi fisik bangunan.
+2. **Kalkulasi Keuangan**: Pastikan alokasi budget dan cicilan (bila menggunakan KPR bank) tidak melebihi batas aman keuangan keluarga Anda (maksimal 30% dari total pendapatan bulanan).
+3. **Survey Lapangan**: Jangan ragu untuk mengunjungi lokasi properti di berbagai kondisi waktu (pagi, sore, malam) guna memastikan keamanan dan kebebasan dari bencana banjir.
+4. **Konsultasikan dengan Ahlinya**: Gunakan jasa Agen Property terpercaya seperti **Uncle Hadi** yang akan mendampingi Anda di setiap tahap pencarian, negosiasi, hingga pengurusan berkas legal secara transparan.
+
+*Ingin berdiskusi lebih mendalam mengenai topik ini? Silakan gunakan fitur **AI Properti Assistant** atau langsung hubungi Uncle Hadi di WhatsApp untuk sesi konsultasi tatap muka gratis!*`,
+        image: `https://images.unsplash.com/photo-${1560518883 + index % 10}-ce09059eeffa?auto=format&fit=crop&w=800&q=80`
+      };
+    });
+
+    const dbArticles = articles || [];
+
+    const merged = baseArticles.map(baseArt => {
+      const dbArt = dbArticles.find(a => a.id === baseArt.id || a.title.toLowerCase().trim() === baseArt.title.toLowerCase().trim());
+      return dbArt ? dbArt : baseArt;
+    });
+
+    dbArticles.forEach(dbArt => {
+      const existsInMerged = merged.some(m => m.id === dbArt.id || m.title.toLowerCase().trim() === dbArt.title.toLowerCase().trim());
+      if (!existsInMerged) {
+        merged.push(dbArt);
+      }
+    });
+
+    return merged;
+  }, [articles]);
+
   // Filter articles based on search term
-  const filteredArticles = (articles || []).filter(art => {
+  const filteredArticles = allArticlesList.filter(art => {
     const term = searchArticleTerm.toLowerCase();
     return !term ||
       art.title.toLowerCase().includes(term) ||
@@ -2254,6 +2304,43 @@ export default function AdminDashboard({
                     </button>
                   </div>
                 </form>
+
+                {/* Vercel Database Backup card */}
+                <div className="mt-8 bg-amber-50/50 border border-amber-200/70 rounded-2xl p-6 sm:p-8" id="vercel-sync-card">
+                  <div className="flex flex-col sm:flex-row items-start gap-4">
+                    <div className="p-3 bg-amber-100 text-[#AA7C11] rounded-xl border border-amber-200 shrink-0">
+                      <Download className="h-6 w-6" />
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-black text-[#0F172A]">Ekspor & Sinkronisasi Vercel (Backup Database)</h4>
+                      <p className="text-xs text-gray-600 leading-relaxed">
+                        Karena Vercel menggunakan sistem Serverless yang bersifat <strong>Read-Only</strong> (tidak menyimpan perubahan database file secara permanen di server), setiap kali Anda menambah properti, menulis artikel, atau mengubah pengaturan di portal admin ini, perubahan tersebut akan hilang saat serverless function di-restart oleh Vercel.
+                      </p>
+                      <p className="text-xs text-gray-600 leading-relaxed font-bold">
+                        Solusi Mudah & Sinkron Selamanya:
+                      </p>
+                      <ol className="list-decimal list-inside text-xs text-gray-600 space-y-1 pl-1">
+                        <li>Lakukan semua perubahan data Anda (tambah properti, ubah harga, dll.) di halaman admin ini.</li>
+                        <li>Klik tombol <strong>"Unduh Database (db.json) Terbaru"</strong> di bawah untuk mengunduh database hasil edit Anda.</li>
+                        <li>Ganti file lokal <code>data/db.json</code> di proyek komputer Anda dengan file yang baru diunduh.</li>
+                        <li>Deploy ulang proyek Anda ke Vercel (misal lewat push Git atau Vercel CLI).</li>
+                      </ol>
+                      
+                      <div className="pt-4">
+                        <button
+                          onClick={() => {
+                            window.open('/api/admin/download-db?token=' + authToken, '_blank');
+                          }}
+                          className="bg-[#0F172A] hover:bg-slate-800 text-[#D4A017] border border-[#D4A017]/40 font-extrabold text-xs px-6 py-3 rounded-xl transition shadow flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                        >
+                          <Download className="h-4 w-4" />
+                          Unduh Database (db.json) Terbaru
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
           )}
@@ -2614,6 +2701,206 @@ export default function AdminDashboard({
                   className="bg-[#D4A017] hover:bg-[#C29014] disabled:bg-gray-400 text-[#0F172A] font-extrabold text-xs px-8 py-3.5 rounded-xl transition shadow flex items-center gap-1.5"
                 >
                   {formSaving ? 'Menyimpan...' : 'Simpan Unit Properti'}
+                  <CheckCircle2 className="h-4 w-4" />
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Article Form Add/Edit Modal */}
+      {showArticleModal && editingArticle && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 flex items-center justify-center p-4 backdrop-blur-xs" id="article-form-modal">
+          <div className="bg-white rounded-3xl max-w-4xl w-full shadow-2xl overflow-hidden border border-gray-100 max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="bg-[#0F172A] text-white p-5 border-b border-[#D4A017]/30 flex items-center justify-between shrink-0">
+              <h3 className="text-lg font-black tracking-tight flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-[#D4A017]" />
+                {editingArticle.id ? 'Edit Artikel Edukasi' : 'Tulis Artikel Edukasi Baru'}
+              </h3>
+              <button
+                onClick={() => setShowArticleModal(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-full bg-white/5 transition"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Modal Content Form Scroll */}
+            <form onSubmit={handleSaveArticle} className="overflow-y-auto flex-1 p-6 sm:p-8 space-y-6">
+              {articleFormError && (
+                <div className="bg-red-50 text-red-600 p-4 rounded-xl text-xs border border-red-100 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <span>{articleFormError}</span>
+                </div>
+              )}
+
+              {/* Grid 1: Basic Info */}
+              <div className="space-y-4">
+                <h4 className="text-xs font-extrabold uppercase text-gray-400 tracking-wider border-l-4 border-[#D4A017] pl-2.5">1. Informasi Utama</h4>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Judul Artikel <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Contoh: 5 Tips Lolos BI Checking KPR Bank"
+                      value={editingArticle.title || ''}
+                      onChange={(e) => setEditingArticle(prev => ({ ...prev, title: e.target.value }))}
+                      className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Kategori Artikel <span className="text-red-500">*</span></label>
+                    <select
+                      value={editingArticle.category || 'Edukasi Properti'}
+                      onChange={(e) => setEditingArticle(prev => ({ ...prev, category: e.target.value }))}
+                      className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700"
+                    >
+                      <option value="Tips Pembelian">Tips Pembelian</option>
+                      <option value="Edukasi KPR">Edukasi KPR</option>
+                      <option value="Perencanaan Keuangan">Perencanaan Keuangan</option>
+                      <option value="Tips KPR">Tips KPR</option>
+                      <option value="Edukasi Properti">Edukasi Properti</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Waktu Baca (Estimasi)</label>
+                    <input
+                      type="text"
+                      placeholder="Contoh: 5 menit baca"
+                      value={editingArticle.readTime || ''}
+                      onChange={(e) => setEditingArticle(prev => ({ ...prev, readTime: e.target.value }))}
+                      className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Tanggal Upload (Otomatis Hari Ini jika kosong)</label>
+                    <input
+                      type="text"
+                      placeholder="Contoh: 24 Juni 2026"
+                      value={editingArticle.date || ''}
+                      onChange={(e) => setEditingArticle(prev => ({ ...prev, date: e.target.value }))}
+                      className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Ringkasan Singkat (Summary) <span className="text-red-500">*</span></label>
+                  <textarea
+                    required
+                    rows={2}
+                    placeholder="Masukkan 1-2 kalimat ringkasan artikel..."
+                    value={editingArticle.summary || ''}
+                    onChange={(e) => setEditingArticle(prev => ({ ...prev, summary: e.target.value }))}
+                    className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-sm"
+                  />
+                </div>
+              </div>
+
+              {/* Grid 2: Media & Image */}
+              <div className="space-y-4">
+                <h4 className="text-xs font-extrabold uppercase text-gray-400 tracking-wider border-l-4 border-[#D4A017] pl-2.5">2. Gambar Artikel</h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 border border-gray-200/50 p-5 rounded-2xl">
+                  {/* Left option: Drag file upload */}
+                  <div className="space-y-3">
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">Opsi A: Upload Gambar Dari Komputer</label>
+                    <div className="border-2 border-dashed border-gray-300 hover:border-[#D4A017] bg-white rounded-2xl p-6 text-center relative hover:bg-slate-50 transition cursor-pointer flex flex-col justify-center min-h-[140px]">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleArticleImageUpload}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
+                      <Upload className="h-6 w-6 text-gray-400 mx-auto mb-2" />
+                      <span className="block text-xs font-extrabold text-slate-700">Pilih / Seret File Gambar</span>
+                      <span className="block text-[10px] text-gray-400 mt-1">Mendukung format JPG, PNG, WEBP. Maksimal 5MB.</span>
+                    </div>
+                    {articleUploadLoading && <span className="block text-[11px] text-[#D4A017] font-bold animate-pulse">Mengunggah file ke server...</span>}
+                    {articleUploadError && <span className="block text-[11px] text-red-500 font-bold">⚠️ {articleUploadError}</span>}
+                  </div>
+
+                  {/* Right option: Paste image URL */}
+                  <div className="space-y-3 flex flex-col justify-between">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Opsi B: Masukkan URL Gambar (Misal Unsplash)</label>
+                      <input
+                        type="text"
+                        placeholder="https://images.unsplash.com/photo-..."
+                        value={editingArticle.image || ''}
+                        onChange={(e) => setEditingArticle(prev => ({ ...prev, image: e.target.value }))}
+                        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                      />
+                    </div>
+
+                    {/* Preview Image Frame */}
+                    {editingArticle.image && (
+                      <div className="pt-2">
+                        <span className="block text-[10px] text-gray-400 font-bold mb-1">Preview Gambar Aktif:</span>
+                        <div className="relative h-20 w-32 rounded-lg border border-gray-200 overflow-hidden bg-slate-100 shadow-sm shrink-0">
+                          <img 
+                            src={editingArticle.image} 
+                            alt="preview" 
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=120&q=80';
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setEditingArticle(prev => ({ ...prev, image: '' }))}
+                            className="absolute top-1 right-1 bg-black/60 hover:bg-black text-white p-0.5 rounded-full"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Grid 3: Content */}
+              <div className="space-y-4">
+                <h4 className="text-xs font-extrabold uppercase text-gray-400 tracking-wider border-l-4 border-[#D4A017] pl-2.5">3. Isi Artikel Lengkap</h4>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Konten Lengkap <span className="text-red-500">*</span></label>
+                  <p className="text-3xs text-gray-400 mb-2">Mendukung format tulisan biasa, paragraf, atau Markdown (gunakan bintang-bintang untuk tebal, list dll).</p>
+                  <textarea
+                    required
+                    rows={12}
+                    placeholder="Tulis seluruh isi artikel Anda secara lengkap di sini..."
+                    value={editingArticle.content || ''}
+                    onChange={(e) => setEditingArticle(prev => ({ ...prev, content: e.target.value }))}
+                    className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#D4A017] leading-relaxed"
+                  />
+                </div>
+              </div>
+
+              {/* Modal Actions Footer */}
+              <div className="pt-4 border-t border-gray-100 flex items-center justify-end gap-3 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setShowArticleModal(false)}
+                  className="bg-slate-100 hover:bg-slate-200 text-gray-700 font-bold text-xs px-5 py-3 rounded-xl transition"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={articleFormSaving}
+                  className="bg-[#D4A017] hover:bg-[#C29014] disabled:bg-gray-400 text-[#0F172A] font-extrabold text-xs px-8 py-3.5 rounded-xl transition shadow flex items-center gap-1.5"
+                >
+                  {articleFormSaving ? 'Menyimpan...' : 'Simpan Artikel'}
                   <CheckCircle2 className="h-4 w-4" />
                 </button>
               </div>

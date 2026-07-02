@@ -91,11 +91,11 @@ export default function Footer({ setActiveTab, onOpenConsultation, settings }: F
               {[
                 { id: 'beranda', label: 'Beranda' },
                 { id: 'tentang-saya', label: 'Tentang Saya' },
-                { id: 'properti', label: 'Properti Pilihan' },
+                { id: 'property', label: 'Properti Pilihan' },
                 { id: 'titip-jual', label: 'Titip Jual' },
                 { id: 'titip-cari', label: 'Titip Cari' },
                 { id: 'edukasi', label: 'Edukasi & Artikel' },
-                { id: 'ai-properti', label: 'AI Properti Assistant' },
+                { id: 'ai-property', label: 'AI Properti Assistant' },
               ].map((menu) => (
                 <li key={menu.id}>
                   <button
