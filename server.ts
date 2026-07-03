@@ -2,7 +2,6 @@ import express from "express";
 import path from "path";
 import fs from "fs";
 import dotenv from "dotenv";
-import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 
 dotenv.config();
@@ -16,9 +15,28 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Serve uploaded images statically - MUST be placed before Vite middleware
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+if (process.env.VERCEL) {
+  app.use("/uploads", express.static(path.join("/tmp", "uploads")));
+}
 
 // Persistent JSON Database Helper
-const DB_PATH = path.join(process.cwd(), "data", "db.json");
+const DB_PATH = (() => {
+  if (process.env.VERCEL) {
+    const tmpPath = path.join("/tmp", "db.json");
+    if (!fs.existsSync(tmpPath)) {
+      try {
+        const localPath = path.join(process.cwd(), "data", "db.json");
+        if (fs.existsSync(localPath)) {
+          fs.copyFileSync(localPath, tmpPath);
+        }
+      } catch (e) {
+        console.error("Failed to copy db.json to /tmp:", e);
+      }
+    }
+    return tmpPath;
+  }
+  return path.join(process.cwd(), "data", "db.json");
+})();
 
 const DEFAULT_SETTINGS = {
   founderPhotoUrl: "/uploads/1783011807123_WhatsAppImage2026-06-23at14.47.20.jpeg",
@@ -525,6 +543,31 @@ app.get("/api/admin/download-db", (req, res) => {
   res.send(JSON.stringify(db, null, 2));
 });
 
+// Restore database JSON (admin-only) - allows static-CMS workflow and zero-loss on free/serverless platforms
+app.post("/api/admin/restore-db", (req, res) => {
+  const token = (req.headers.authorization || "").replace("Bearer ", "") || (req.query.token as string);
+  
+  if (!isValidToken(token)) {
+    return res.status(403).json({ error: "Akses ditolak. Sesi tidak valid atau telah berakhir!" });
+  }
+
+  const payload = req.body;
+  if (!payload || typeof payload !== "object") {
+    return res.status(400).json({ error: "Format data tidak valid!" });
+  }
+
+  if (!payload.settings || !payload.properties) {
+    return res.status(400).json({ error: "Database tidak valid. Harus mengandung data 'settings' dan 'properties'." });
+  }
+
+  const success = writeDb(payload);
+  if (success) {
+    res.json({ success: true, message: "Database berhasil dipulihkan!" });
+  } else {
+    res.status(500).json({ error: "Gagal menulis ke database." });
+  }
+});
+
 // Logout endpoint
 app.post("/api/admin/logout", (req, res) => {
   const authHeader = req.headers.authorization;
@@ -808,7 +851,9 @@ app.post("/api/admin/upload", async (req, res) => {
       console.error("ImgBB upload failed, falling back to local storage. Error details:", errText);
     }
 
-    const uploadsDir = path.join(process.cwd(), "uploads");
+    const uploadsDir = process.env.VERCEL
+      ? path.join("/tmp", "uploads")
+      : path.join(process.cwd(), "uploads");
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true });
     }
@@ -937,6 +982,7 @@ app.post("/api/chat", async (req, res) => {
 // Setup Vite or Static File Serving
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
