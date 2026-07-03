@@ -23,8 +23,10 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Serve uploaded images statically - MUST be placed before Vite middleware
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+app.use("/uploads", express.static(path.join(process.cwd(), "public", "uploads")));
 if (process.env.VERCEL) {
   app.use("/uploads", express.static(path.join("/tmp", "uploads")));
+  app.use("/uploads", express.static(path.join(process.cwd(), "dist", "uploads")));
 }
 
 // Persistent JSON Database Helper
