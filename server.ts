@@ -9,6 +9,14 @@ dotenv.config();
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
+// Middleware to handle Vercel's path routing when /api is stripped
+app.use((req, res, next) => {
+  if (process.env.VERCEL && !req.url.startsWith("/api") && !req.url.startsWith("/_next") && !req.url.includes(".")) {
+    req.url = "/api" + req.url;
+  }
+  next();
+});
+
 // Increase JSON body limits for base64 image uploads
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
@@ -849,6 +857,15 @@ app.post("/api/admin/upload", async (req, res) => {
       
       const errText = await response.text();
       console.error("ImgBB upload failed, falling back to local storage. Error details:", errText);
+    }
+
+    // On Vercel, if no ImgBB API key is configured, return the base64Data directly.
+    // This allows the image to be saved directly in the JSON database, meaning
+    // it will be 100% persistent across serverless container restarts and fully
+    // included in any database downloads/backups!
+    if (process.env.VERCEL) {
+      console.log("Vercel environment detected. Returning Base64 data directly for maximum database persistence.");
+      return res.json({ success: true, imageUrl: base64Data });
     }
 
     const uploadsDir = process.env.VERCEL
