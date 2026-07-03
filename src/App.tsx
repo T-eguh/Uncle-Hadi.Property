@@ -19,18 +19,18 @@ export default function App() {
   const [properties, setProperties] = useState<Property[] | null>(null);
   const [articles, setArticles] = useState<Article[] | null>(null);
   const [settings, setSettings] = useState({
-    founderPhotoUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=350&h=350&q=80",
+    founderPhotoUrl: "/uploads/1783087028603_WhatsAppImage2026-06-23at14.47.20.jpeg",
     founderName: "Hadi Sukmono",
-    founderTitle: "Founder & Agen Property Utama",
+    founderTitle: "Expert Advisor",
     founderBrand: "Uncle Hadi.Property – Teman Cari Property",
     aboutHeading: "Halo, Saya Hadi Sukmono. Selamat Datang di Uncle Hadi.Property",
-    aboutText1: "Saya adalah agen property yang berfokus membantu masyarakat menemukan rumah, apartemen, ruko, dan investasi properti yang sesuai kebutuhan Anda di Bekasi, Jakarta Timur, Cikarang, dan sekitarnya.",
-    aboutQuote: '"Saya percaya bahwa membeli atau menjual properti adalah salah satu keputusan terbesar dalam hidup yang membutuhkan informasi yang jelas, jujur, dan pendampingan yang tepat."',
-    aboutText2: "Melalui website ini, saya berbagi informasi property yang transparan, artikel edukasi yang mudah dipahami, serta layanan pemasaran properti digital premium bagi pemilik yang ingin menjual atau menyewakan asetnya secara cepat.",
+    aboutText1: "Saya adalah agen property yang berfokus membantu masyarakat menemukan rumah, apartemen, ruko, dan investasi properti yang sesuai kebutuhan Anda di daerah jakarta, jawa barat,jawa tengah,jawa timur dan bali.",
+    aboutQuote: '"Saya percaya bahwa setiap properti memiliki nilai lebih dari sekadar bangunan. Di balik setiap rumah, ruko, atau investasi, terdapat harapan, impian, dan masa depan yang ingin diwujudkan. Karena itu, Uncle Hadi Property hadir dengan komitmen untuk memberikan pelayanan yang jujur, transparan, dan profesional, sehingga setiap klien dapat mengambil keputusan dengan rasa aman dan penuh keyakinan."',
+    aboutText2: '"Bersama tim yang berpengalaman, kami terus berupaya menghadirkan pilihan properti terbaik serta membangun hubungan yang didasari kepercayaan dan kepuasan pelanggan. Bagi kami, keberhasilan tidak hanya diukur dari transaksi yang tercapai, tetapi juga dari kepercayaan yang terus tumbuh dan hubungan jangka panjang yang terjalin dengan setiap klien. Terima kasih telah mempercayakan perjalanan properti Anda kepada Uncle Hadi property"',
     heroTitle: "Membantu Menemukan Property yang Tepat untuk Investasi dan Hunian",
-    heroSubtitle: "Saya membantu calon pembeli, penjual, dan investor property mendapatkan informasi yang jelas, transparan, dan terpercaya untuk wilayah Bekasi, Jakarta Timur, Cikarang, dan sekitarnya.",
+    heroSubtitle: "Saya membantu calon pembeli, penjual, dan investor property mendapatkan informasi yang jelas, transparan, dan terpercaya untuk wilayah  jakarta, jawa barat,jawa tengah,jawa timur dan bali.",
     heroBgImage: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1920&q=80",
-    whatsAppNo: "6281234567890",
+    whatsAppNo: "6282112790005",
     logoText: "Uncle Hadi",
     logoColorText: ".Property",
     logoSlogan: "Teman Cari Property",
@@ -42,9 +42,10 @@ export default function App() {
     slide3Title: "Pasarkan Properti Anda Lebih Cepat dengan Strategi Digital Modern",
     slide3Subtitle: "Layanan titip jual atau sewa properti premium untuk menjangkau ribuan calon pembeli potensial secara tertarget di wilayah Bekasi, Cikarang, dan Jakarta Timur.",
     slide3Image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1920&q=80",
-    officeAddress: "Bekasi Timur, Bekasi, Jawa Barat (Samping Stasiun KRL Bekasi Timur)",
-    officeEmail: "hadi@unclehadi.property",
-    officePhone: "+62 812-3456-7890"
+    officeAddress: "Jl.Sedayu City Boulevard Raya Blok SCBD No.009, Cakung Barat Jakarta Timur",
+    officeEmail: "hadisukmono.xmsg@gmail.com",
+    officePhone: "6281387009749",
+    logoImageUrl: "/uploads/1783087047048_ChatGPT_Image_3_Jul_2026__00.19.37-removebg-preview.png"
   });
 
   // Catalog filter and sort settings synchronized from Navbar dropdowns

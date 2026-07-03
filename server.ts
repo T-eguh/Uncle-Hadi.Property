@@ -49,7 +49,7 @@ const DB_PATH = (() => {
 })();
 
 const DEFAULT_SETTINGS = {
-  founderPhotoUrl: "/uploads/1783011807123_WhatsAppImage2026-06-23at14.47.20.jpeg",
+  founderPhotoUrl: "/uploads/1783087028603_WhatsAppImage2026-06-23at14.47.20.jpeg",
   founderName: "Hadi Sukmono",
   founderTitle: "Expert Advisor",
   founderBrand: "Uncle Hadi.Property – Teman Cari Property",
@@ -75,7 +75,7 @@ const DEFAULT_SETTINGS = {
   officeAddress: "Jl.Sedayu City Boulevard Raya Blok SCBD No.009, Cakung Barat Jakarta Timur",
   officeEmail: "hadisukmono.xmsg@gmail.com",
   officePhone: "6281387009749",
-  logoImageUrl: "/uploads/1783013173106_ChatGPT_Image_3_Jul_2026__00.19.37-removebg-preview.png"
+  logoImageUrl: "/uploads/1783087047048_ChatGPT_Image_3_Jul_2026__00.19.37-removebg-preview.png"
 };
 
 const DEFAULT_PROPERTIES = [
