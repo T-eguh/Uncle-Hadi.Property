@@ -12,6 +12,7 @@ import KontakSection from './components/KontakSection';
 import AdminDashboard from './components/AdminDashboard';
 import { Property, Article } from './types';
 import { PhoneCall, X, MessageSquare, Info, Star, Lock, Eye, EyeOff, ShieldAlert, AlertCircle } from 'lucide-react';
+import { DEFAULT_LOGO_BASE64, DEFAULT_FOUNDER_BASE64 } from './defaultImages';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('beranda');
@@ -19,7 +20,7 @@ export default function App() {
   const [properties, setProperties] = useState<Property[] | null>(null);
   const [articles, setArticles] = useState<Article[] | null>(null);
   const [settings, setSettings] = useState({
-    founderPhotoUrl: "/uploads/1783087028603_WhatsAppImage2026-06-23at14.47.20.jpeg",
+    founderPhotoUrl: DEFAULT_FOUNDER_BASE64,
     founderName: "Hadi Sukmono",
     founderTitle: "Expert Advisor",
     founderBrand: "Uncle Hadi.Property – Teman Cari Property",
@@ -45,7 +46,7 @@ export default function App() {
     officeAddress: "Jl.Sedayu City Boulevard Raya Blok SCBD No.009, Cakung Barat Jakarta Timur",
     officeEmail: "hadisukmono.xmsg@gmail.com",
     officePhone: "6281387009749",
-    logoImageUrl: "/uploads/1783087047048_ChatGPT_Image_3_Jul_2026__00.19.37-removebg-preview.png"
+    logoImageUrl: DEFAULT_LOGO_BASE64
   });
 
   // Catalog filter and sort settings synchronized from Navbar dropdowns

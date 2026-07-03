@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs";
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
+import { DEFAULT_LOGO_BASE64, DEFAULT_FOUNDER_BASE64 } from "./src/defaultImages";
 
 dotenv.config();
 
@@ -49,7 +50,7 @@ const DB_PATH = (() => {
 })();
 
 const DEFAULT_SETTINGS = {
-  founderPhotoUrl: "/uploads/1783087028603_WhatsAppImage2026-06-23at14.47.20.jpeg",
+  founderPhotoUrl: DEFAULT_FOUNDER_BASE64,
   founderName: "Hadi Sukmono",
   founderTitle: "Expert Advisor",
   founderBrand: "Uncle Hadi.Property – Teman Cari Property",
@@ -57,7 +58,7 @@ const DEFAULT_SETTINGS = {
   aboutText1: "Saya adalah agen property yang berfokus membantu masyarakat menemukan rumah, apartemen, ruko, dan investasi properti yang sesuai kebutuhan Anda di daerah jakarta, jawa barat,jawa tengah,jawa timur dan bali.",
   aboutQuote: '"Saya percaya bahwa setiap properti memiliki nilai lebih dari sekadar bangunan. Di balik setiap rumah, ruko, atau investasi, terdapat harapan, impian, dan masa depan yang ingin diwujudkan. Karena itu, Uncle Hadi Property hadir dengan komitmen untuk memberikan pelayanan yang jujur, transparan, dan profesional, sehingga setiap klien dapat mengambil keputusan dengan rasa aman dan penuh keyakinan."',
   aboutText2: '"Bersama tim yang berpengalaman, kami terus berupaya menghadirkan pilihan properti terbaik serta membangun hubungan yang didasari kepercayaan dan kepuasan pelanggan. Bagi kami, keberhasilan tidak hanya diukur dari transaksi yang tercapai, tetapi juga dari kepercayaan yang terus tumbuh dan hubungan jangka panjang yang terjalin dengan setiap klien. Terima kasih telah mempercayakan perjalanan properti Anda kepada Uncle Hadi property"',
-  heroTitle: "Membantu Menemukan Property yang Tepat untuk Investasi dan Hunian",
+  heroTitle: "Membantu Menemukan Property yang Tepat untuk Investasi and Hunian",
   heroSubtitle: "Saya membantu calon pembeli, penjual, dan investor property mendapatkan informasi yang jelas, transparan, dan terpercaya untuk wilayah  jakarta, jawa barat,jawa tengah,jawa timur dan bali.",
   heroBgImage: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1920&q=80",
   whatsAppNo: "6282112790005",
@@ -75,7 +76,7 @@ const DEFAULT_SETTINGS = {
   officeAddress: "Jl.Sedayu City Boulevard Raya Blok SCBD No.009, Cakung Barat Jakarta Timur",
   officeEmail: "hadisukmono.xmsg@gmail.com",
   officePhone: "6281387009749",
-  logoImageUrl: "/uploads/1783087047048_ChatGPT_Image_3_Jul_2026__00.19.37-removebg-preview.png"
+  logoImageUrl: DEFAULT_LOGO_BASE64
 };
 
 const DEFAULT_PROPERTIES = [
