@@ -338,6 +338,53 @@ export default function AdminDashboard({
     onBackToWebsite();
   };
 
+  // Helper to compress image client-side using Canvas before upload
+  const compressImage = (file: File, maxWidth = 1200, maxHeight = 1200, quality = 0.8): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(event.target?.result as string);
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+          resolve(compressedBase64);
+        };
+        img.onerror = (err) => {
+          reject(err);
+        };
+      };
+      reader.onerror = (err) => {
+        reject(err);
+      };
+    });
+  };
+
   // Image File Upload Helper (converts to Base64 and POSTs to server)
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
@@ -352,42 +399,34 @@ export default function AdminDashboard({
     setUploadLoading(true);
     setUploadError('');
 
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64Data = reader.result as string;
-      try {
-        const res = await fetch('/api/admin/upload', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
-          },
-          body: JSON.stringify({
-            filename: file.name,
-            base64Data
-          })
-        });
+    try {
+      const base64Data = await compressImage(file);
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({
+          filename: file.name,
+          base64Data
+        })
+      });
 
-        const data = await res.json();
-        if (res.ok && data.success) {
-          setEditingProp(prev => ({
-            ...prev,
-            image: data.imageUrl
-          }));
-        } else {
-          setUploadError(data.error || 'Gagal mengunggah gambar.');
-        }
-      } catch (err) {
-        setUploadError('Kesalahan jaringan saat mengunggah gambar.');
-      } finally {
-        setUploadLoading(false);
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setEditingProp(prev => ({
+          ...prev,
+          image: data.imageUrl
+        }));
+      } else {
+        setUploadError(data.error || 'Gagal mengunggah gambar.');
       }
-    };
-    reader.onerror = () => {
-      setUploadError('Gagal membaca file gambar.');
+    } catch (err) {
+      setUploadError('Kesalahan jaringan saat mengunggah gambar.');
+    } finally {
       setUploadLoading(false);
-    };
-    reader.readAsDataURL(file);
+    }
   };
 
   // Handle Founder photo upload
@@ -405,43 +444,33 @@ export default function AdminDashboard({
     setSettingsError('');
     setSettingsSuccess('');
 
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64Data = reader.result as string;
-      try {
-        const res = await fetch('/api/admin/upload', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
-          },
-          body: JSON.stringify({
-            filename: file.name,
-            base64Data
-          })
-        });
+    try {
+      const base64Data = await compressImage(file);
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({
+          filename: file.name,
+          base64Data
+        })
+      });
 
-        const data = await res.json();
-        if (res.ok && data.success) {
-          setFounderPhotoUrl(data.imageUrl);
-          setSettingsSuccess('Foto berhasil diunggah! Klik "Simpan Perubahan" untuk menerapkan secara permanen.');
-        } else {
-          setSettingsError(data.error || 'Gagal mengunggah foto founder.');
-        }
-      } catch (err) {
-        setSettingsError('Kesalahan jaringan saat mengunggah foto.');
-      } finally {
-        setUploadFounderLoading(false);
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setFounderPhotoUrl(data.imageUrl);
+        setSettingsSuccess('Foto berhasil diunggah! Klik "Simpan Perubahan" untuk menerapkan secara permanen.');
+      } else {
+        setSettingsError(data.error || 'Gagal mengunggah foto founder.');
       }
-    };
-    reader.onerror = () => {
-      setSettingsError('Gagal membaca file gambar.');
+    } catch (err) {
+      setSettingsError('Kesalahan jaringan saat mengunggah foto.');
+    } finally {
       setUploadFounderLoading(false);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  // Handle Hero bg upload
+    }
+  };  // Handle Hero bg upload
   const handleHeroBgUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     const file = e.target.files[0];
@@ -455,40 +484,32 @@ export default function AdminDashboard({
     setSettingsError('');
     setSettingsSuccess('');
 
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64Data = reader.result as string;
-      try {
-        const res = await fetch('/api/admin/upload', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
-          },
-          body: JSON.stringify({
-            filename: file.name,
-            base64Data
-          })
-        });
+    try {
+      const base64Data = await compressImage(file);
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({
+          filename: file.name,
+          base64Data
+        })
+      });
 
-        const data = await res.json();
-        if (res.ok && data.success) {
-          setHeroBgImage(data.imageUrl);
-          setSettingsSuccess('Foto background hero berhasil diunggah! Klik "Simpan Perubahan" untuk menerapkan secara permanen.');
-        } else {
-          setSettingsError(data.error || 'Gagal mengunggah foto hero.');
-        }
-      } catch (err) {
-        setSettingsError('Kesalahan jaringan saat mengunggah foto.');
-      } finally {
-        setUploadFounderLoading(false);
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setHeroBgImage(data.imageUrl);
+        setSettingsSuccess('Foto background hero berhasil diunggah! Klik "Simpan Perubahan" untuk menerapkan secara permanen.');
+      } else {
+        setSettingsError(data.error || 'Gagal mengunggah foto hero.');
       }
-    };
-    reader.onerror = () => {
-      setSettingsError('Gagal membaca file gambar.');
+    } catch (err) {
+      setSettingsError('Kesalahan jaringan saat mengunggah foto.');
+    } finally {
       setUploadFounderLoading(false);
-    };
-    reader.readAsDataURL(file);
+    }
   };
 
   // Handle logo image upload
@@ -505,40 +526,32 @@ export default function AdminDashboard({
     setSettingsError('');
     setSettingsSuccess('');
 
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64Data = reader.result as string;
-      try {
-        const res = await fetch('/api/admin/upload', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
-          },
-          body: JSON.stringify({
-            filename: file.name,
-            base64Data
-          })
-        });
+    try {
+      const base64Data = await compressImage(file);
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({
+          filename: file.name,
+          base64Data
+        })
+      });
 
-        const data = await res.json();
-        if (res.ok && data.success) {
-          setLogoImageUrl(data.imageUrl);
-          setSettingsSuccess('Foto Logo berhasil diunggah! Klik "Simpan Perubahan" untuk menerapkan secara permanen.');
-        } else {
-          setSettingsError(data.error || 'Gagal mengunggah logo.');
-        }
-      } catch (err) {
-        setSettingsError('Kesalahan jaringan saat mengunggah foto.');
-      } finally {
-        setUploadLogoLoading(false);
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setLogoImageUrl(data.imageUrl);
+        setSettingsSuccess('Foto Logo berhasil diunggah! Klik "Simpan Perubahan" untuk menerapkan secara permanen.');
+      } else {
+        setSettingsError(data.error || 'Gagal mengunggah logo.');
       }
-    };
-    reader.onerror = () => {
-      setSettingsError('Gagal membaca file gambar.');
+    } catch (err) {
+      setSettingsError('Kesalahan jaringan saat mengunggah foto.');
+    } finally {
       setUploadLogoLoading(false);
-    };
-    reader.readAsDataURL(file);
+    }
   };
 
   // Save founder photo to server settings
@@ -700,42 +713,34 @@ export default function AdminDashboard({
     setArticleUploadLoading(true);
     setArticleUploadError('');
 
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64Data = reader.result as string;
-      try {
-        const res = await fetch('/api/admin/upload', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
-          },
-          body: JSON.stringify({
-            filename: file.name,
-            base64Data
-          })
-        });
+    try {
+      const base64Data = await compressImage(file);
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({
+          filename: file.name,
+          base64Data
+        })
+      });
 
-        const data = await res.json();
-        if (res.ok && data.success) {
-          setEditingArticle(prev => ({
-            ...prev,
-            image: data.imageUrl
-          }));
-        } else {
-          setArticleUploadError(data.error || 'Gagal mengunggah gambar.');
-        }
-      } catch (err) {
-        setArticleUploadError('Kesalahan jaringan saat mengunggah gambar.');
-      } finally {
-        setArticleUploadLoading(false);
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setEditingArticle(prev => ({
+          ...prev,
+          image: data.imageUrl
+        }));
+      } else {
+        setArticleUploadError(data.error || 'Gagal mengunggah gambar.');
       }
-    };
-    reader.onerror = () => {
-      setArticleUploadError('Gagal membaca file gambar.');
+    } catch (err) {
+      setArticleUploadError('Kesalahan jaringan saat mengunggah gambar.');
+    } finally {
       setArticleUploadLoading(false);
-    };
-    reader.readAsDataURL(file);
+    }
   };
 
   // Open property modal for Add
