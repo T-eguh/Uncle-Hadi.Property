@@ -127,6 +127,17 @@ export default function PropertyCatalog({
       result = [...result].sort((a, b) => b.id.localeCompare(a.id));
     } else if (selectedSort === 'unggulan') {
       result = [...result].sort((a, b) => b.price - a.price);
+    } else if (selectedSort === 'terendah') {
+      result = [...result].sort((a, b) => a.price - b.price);
+    } else if (selectedSort === 'turun_harga') {
+      result = [...result].sort((a, b) => {
+        const dropA = a.oldPrice ? (a.oldPrice - a.price) : 0;
+        const dropB = b.oldPrice ? (b.oldPrice - b.price) : 0;
+        if (dropA !== dropB) {
+          return dropB - dropA; // Sort descending by price drop amount
+        }
+        return a.price - b.price; // fallback to lower price first
+      });
     }
 
     return result;
@@ -249,6 +260,8 @@ export default function PropertyCatalog({
                 <option value="default">Default</option>
                 <option value="terbaru">Listing Terbaru</option>
                 <option value="unggulan">Harga Tertinggi</option>
+                <option value="terendah">Harga Terendah</option>
+                <option value="turun_harga">Turun Harga</option>
               </select>
             </div>
           </div>
@@ -327,7 +340,7 @@ export default function PropertyCatalog({
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent"></div>
                   
-                  {/* Category badge */}
+                   {/* Category badge */}
                   <span className={`absolute top-4 left-4 text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1.5 rounded shadow ${
                     prop.category === 'Primary' 
                       ? 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white' 
@@ -335,6 +348,13 @@ export default function PropertyCatalog({
                   }`}>
                     {prop.category}
                   </span>
+
+                  {/* Turun Harga Badge */}
+                  {prop.oldPrice && prop.oldPrice > prop.price && (
+                    <span className="absolute top-14 left-4 text-[9px] font-black uppercase tracking-widest px-2 py-1 bg-red-600 text-white rounded shadow-md border border-red-500 animate-pulse">
+                      Turun Harga!
+                    </span>
+                  )}
 
                   {/* Property Type Badge */}
                   <span className="absolute top-4 right-4 text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1.5 bg-slate-900/80 text-[#D4A017] rounded shadow backdrop-blur-sm border border-[#D4A017]/30">
@@ -344,7 +364,14 @@ export default function PropertyCatalog({
                   {/* Price overlay */}
                   <div className="absolute bottom-4 left-4 text-white">
                     <p className="text-xs text-[#D4A017] font-semibold uppercase tracking-wider">Harga Penawaran</p>
-                    <p className="text-xl font-extrabold tracking-tight">{prop.priceFormatted}</p>
+                    <div className="flex items-baseline gap-2">
+                      <p className="text-xl font-extrabold tracking-tight">{prop.priceFormatted}</p>
+                      {prop.oldPrice && prop.oldPrice > prop.price && (
+                        <span className="text-[10px] text-gray-300 line-through font-semibold">
+                          Rp {prop.oldPrice.toLocaleString('id-ID')}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -503,7 +530,14 @@ export default function PropertyCatalog({
                 <div className="p-6 md:p-8 space-y-6">
                   <div>
                     <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Harga Properti</span>
-                    <p className="text-3xl font-black text-[#0F172A] tracking-tight">{selectedPropertyDetail.priceFormatted}</p>
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <p className="text-3xl font-black text-[#0F172A] tracking-tight">{selectedPropertyDetail.priceFormatted}</p>
+                      {selectedPropertyDetail.oldPrice && selectedPropertyDetail.oldPrice > selectedPropertyDetail.price && (
+                        <span className="text-sm text-red-600 line-through font-bold">
+                          Sebelumnya: Rp {selectedPropertyDetail.oldPrice.toLocaleString('id-ID')}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-2">

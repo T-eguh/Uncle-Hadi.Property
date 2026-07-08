@@ -16,6 +16,7 @@ export interface Property {
   whatsappMessage: string;
   description: string;
   status: 'tersedia' | 'tersewa' | 'terjual';
+  oldPrice?: number;
   rentPrice?: string;
   rentPeriod?: string;
   electricity?: string;
