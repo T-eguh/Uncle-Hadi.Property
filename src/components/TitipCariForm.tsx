@@ -21,6 +21,7 @@ export default function TitipCariForm({ onOpenConsultation, settings }: TitipCar
   const [bathrooms, setBathrooms] = useState('');
   const [certificate, setCertificate] = useState('SHM');
   const [facing, setFacing] = useState('Bebas / Hadap Mana Saja');
+  const [carport, setCarport] = useState('');
   const [budget, setBudget] = useState('');
 
   // Conditional field
@@ -50,6 +51,7 @@ export default function TitipCariForm({ onOpenConsultation, settings }: TitipCar
       text += `- Tingkat Lantai: ${floors || 'Bebas'} Lantai\n`;
       text += `- Kamar Tidur: ${bedrooms || 'Bebas'}\n`;
       text += `- Kamar Mandi: ${bathrooms || 'Bebas'}\n`;
+      text += `- Garasi / Carport: ${carport || 'Bebas'}\n`;
     }
     
     text += `- Luas Tanah Minimal: ${landArea || 'Bebas'} m²\n`;
@@ -94,6 +96,7 @@ export default function TitipCariForm({ onOpenConsultation, settings }: TitipCar
           buildingArea,
           bedrooms,
           bathrooms,
+          carport,
           certificate,
           facing,
           budget,
@@ -379,7 +382,7 @@ export default function TitipCariForm({ onOpenConsultation, settings }: TitipCar
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Kamar Tidur Minimal</label>
                       <input
@@ -403,7 +406,18 @@ export default function TitipCariForm({ onOpenConsultation, settings }: TitipCar
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Kebutuhan Lebar Jalan depan</label>
+                      <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Garasi / Carport</label>
+                      <input
+                        type="text"
+                        placeholder="Contoh: Carport bisa untuk 1 mobil"
+                        value={carport}
+                        onChange={(e) => setCarport(e.target.value)}
+                        className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2 text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Kebutuhan Lebar Jalan</label>
                       <input
                         type="text"
                         placeholder="Contoh: Muat 2 mobil (min 6m)"

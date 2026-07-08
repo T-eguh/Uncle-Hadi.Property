@@ -140,7 +140,7 @@ export default function Footer({ setActiveTab, onOpenConsultation, settings }: F
               Area Kerja Utama
             </h3>
             <div className="flex flex-wrap gap-2">
-              {['Bekasi', 'Jakarta Timur', 'Cikarang', 'Karawang', 'Tambun', 'Cibitung'].map((area) => (
+              {['Bekasi', 'Jakarta Timur', 'Jakarta Utara'].map((area) => (
                 <span key={area} className="bg-[#1E293B] border border-[#D4A017]/20 text-[#F8FAFC]/90 text-xs px-3 py-1.5 rounded font-medium">
                   {area}
                 </span>

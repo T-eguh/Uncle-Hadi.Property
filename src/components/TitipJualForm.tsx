@@ -29,11 +29,14 @@ export default function TitipJualForm({ onOpenConsultation, settings }: TitipJua
   const [buildingArea, setBuildingArea] = useState('');
   const [bedrooms, setBedrooms] = useState('');
   const [bathrooms, setBathrooms] = useState('');
+  const [carport, setCarport] = useState('');
   const [certificate, setCertificate] = useState('SHM');
+  const [customCertificate, setCustomCertificate] = useState('');
   const [facing, setFacing] = useState('Utara');
   const [electricity, setElectricity] = useState('2200 VA');
   const [water, setWater] = useState('PDAM & Jetpump');
   const [furnished, setFurnished] = useState('Unfurnished');
+  const [currency, setCurrency] = useState('IDR');
   const [price, setPrice] = useState('');
   
   // Rented states
@@ -81,14 +84,15 @@ export default function TitipJualForm({ onOpenConsultation, settings }: TitipJua
     text += `- Tingkat Lantai: ${floors} Lantai\n`;
     text += `- Kamar Tidur: ${bedrooms}\n`;
     text += `- Kamar Mandi: ${bathrooms}\n`;
-    text += `- Sertifikat/Surat: ${certificate}\n`;
+    text += `- Garasi / Carport: ${carport}\n`;
+    text += `- Sertifikat/Surat: ${certificate === 'Lainnya' ? `Lainnya (${customCertificate})` : certificate}\n`;
     text += `- Hadap: ${facing}\n`;
     text += `- Listrik: ${electricity}\n`;
     text += `- Air Bersih: ${water}\n`;
     text += `- Kondisi Furnished: ${furnished}\n\n`;
 
-    text += `*NILAI PENAWARAN:* \n`;
-    text += `- Harga Penawaran: Rp ${price}\n`;
+    text += `*NILAI PENAWARAN (SEBELUM PAJAK):* \n`;
+    text += `- Harga Penawaran: ${currency === 'USD' ? '$' : 'Rp'} ${price}\n`;
     if (actionType === 'Sewa') {
       text += `- Minimal Periode Sewa: ${rentPeriod}\n`;
     }
@@ -129,11 +133,13 @@ export default function TitipJualForm({ onOpenConsultation, settings }: TitipJua
           buildingArea,
           bedrooms,
           bathrooms,
-          certificate,
+          carport,
+          certificate: certificate === 'Lainnya' ? `Lainnya (${customCertificate})` : certificate,
           facing,
           electricity,
           water,
           furnished,
+          currency,
           price,
           isCurrentlyRented,
           rentPeriod,
@@ -397,9 +403,9 @@ export default function TitipJualForm({ onOpenConsultation, settings }: TitipJua
                 </div>
 
                 {/* Rooms and floors */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Berapa Lantai <span className="text-red-500">*</span></label>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Jumlah Lantai <span className="text-red-500">*</span></label>
                     <input
                       type="number"
                       required
@@ -436,6 +442,19 @@ export default function TitipJualForm({ onOpenConsultation, settings }: TitipJua
                       id="input-bathrooms"
                     />
                   </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Garasi / Carport <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Contoh: carport bisa untuk 1 mobil"
+                      value={carport}
+                      onChange={(e) => setCarport(e.target.value)}
+                      className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                      id="input-carport"
+                    />
+                  </div>
                 </div>
 
                 {/* Certificate, Facing, Electricity, Water */}
@@ -452,8 +471,23 @@ export default function TitipJualForm({ onOpenConsultation, settings }: TitipJua
                       <option value="HGB">HGB (Hak Guna Bangunan)</option>
                       <option value="SHMRS">SHMRS (Sertifikat Hak Milik Rumah Susun)</option>
                       <option value="AJB">AJB (Akta Jual Beli)</option>
-                      <option value="Girik/Lainnya">Girik / Lainnya</option>
+                      <option value="Girik">Girik</option>
+                      <option value="Lainnya">Lainnya</option>
                     </select>
+
+                    {certificate === 'Lainnya' && (
+                      <div className="mt-2">
+                        <label className="block text-[10px] font-semibold text-gray-500 mb-1">Ketik Legalitas Lainnya <span className="text-red-500">*</span></label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Ketik legalitas secara manual..."
+                          value={customCertificate}
+                          onChange={(e) => setCustomCertificate(e.target.value)}
+                          className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div>
@@ -522,17 +556,27 @@ export default function TitipJualForm({ onOpenConsultation, settings }: TitipJua
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                      Harga {actionType === 'Jual' ? 'Jual Nett/Nego' : 'Sewa per Tahun'} (Rp) <span className="text-red-500">*</span>
+                      Harga Sebelum Pajak ({actionType === 'Jual' ? 'Jual Nett/Nego' : 'Sewa per Tahun'}) <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Contoh: 850.000.000"
-                      value={price}
-                      onChange={(e) => setPrice(e.target.value)}
-                      className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-bold text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
-                      id="input-price"
-                    />
+                    <div className="grid grid-cols-3 gap-2">
+                      <select
+                        value={currency}
+                        onChange={(e) => setCurrency(e.target.value)}
+                        className="col-span-1 bg-[#F8FAFC] border border-gray-200 rounded-xl px-2 py-2.5 text-xs font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                      >
+                        <option value="IDR">Rupiah (Rp)</option>
+                        <option value="USD">Dollar (US$)</option>
+                      </select>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Contoh: 850.000.000"
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                        className="col-span-2 w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-bold text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                        id="input-price"
+                      />
+                    </div>
                   </div>
 
                   {actionType === 'Sewa' && (

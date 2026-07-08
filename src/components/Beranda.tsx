@@ -27,7 +27,7 @@ export default function Beranda({ onNavigateToTab, onOpenConsultation, propertie
   const slides = [
     {
       title: settings?.heroTitle || "Membantu Menemukan Property yang Tepat untuk Investasi dan Hunian",
-      subtitle: settings?.heroSubtitle || "Saya membantu calon pembeli, penjual, dan investor property mendapatkan informasi yang jelas, transparan, dan terpercaya untuk wilayah Bekasi, Jakarta Timur, Cikarang, dan sekitarnya.",
+      subtitle: settings?.heroSubtitle || "Saya membantu calon pembeli, penjual, dan investor property mendapatkan informasi yang jelas, transparan, dan terpercaya untuk wilayah Bekasi, Jakarta Timur, dan jakarta utara.",
       image: settings?.heroBgImage || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1920&q=80",
       badge: settings?.founderBrand || "Uncle Hadi.Property – Teman Cari Property"
     },
@@ -38,8 +38,8 @@ export default function Beranda({ onNavigateToTab, onOpenConsultation, propertie
       badge: settings?.slide2Badge || "Layanan Konsultasi Amanah & Berlisensi"
     },
     {
-      title: settings?.slide3Title || "Pasarkan Properti Anda Lebih Cepat dengan Strategi Digital Modern",
-      subtitle: settings?.slide3Subtitle || "Layanan titip jual atau sewa properti premium untuk menjangkau ribuan calon pembeli potensial secara tertarget di wilayah Bekasi, Cikarang, dan Jakarta Timur.",
+      title: settings?.slide3Title || "Pasarkan Property Anda Lebih Cepat dengan Strategi Digital Modern",
+      subtitle: settings?.slide3Subtitle || "Layanan titip jual atau sewa property premium untuk menjangkau ribuan calon pembeli potensial secara tertarget di wilayah Bekasi, Jakarta Utara, dan Jakarta Timur.",
       image: settings?.slide3Image || "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1920&q=80",
       badge: settings?.slide3Badge || "Jasa Pemasaran & Titip Jual Digital Premium"
     }
@@ -103,32 +103,46 @@ export default function Beranda({ onNavigateToTab, onOpenConsultation, propertie
             </p>
 
             {/* CTA buttons */}
-            <div className="flex flex-wrap gap-4 pt-2" id="hero-cta-buttons">
-              <button
-                onClick={() => onNavigateToTab('properti')}
-                className="bg-[#D4A017] hover:bg-[#B38410] text-white font-extrabold text-sm px-6 py-3.5 rounded-xl transition-all duration-300 shadow-md transform hover:-translate-y-0.5 flex items-center gap-2 cursor-pointer"
-                id="hero-btn-properties"
-              >
-                Lihat Property
-                <ArrowRight className="h-4 w-4" />
-              </button>
-              
-              <button
-                onClick={onOpenConsultation}
-                className="bg-white/10 hover:bg-white/20 border border-white/25 text-white font-bold text-sm px-6 py-3.5 rounded-xl transition duration-300 shadow flex items-center gap-2 cursor-pointer"
-                id="hero-btn-consultation"
-              >
-                <PhoneCall className="h-4 w-4 text-[#D4A017]" />
-                Konsultasi Gratis
-              </button>
+            <div className="space-y-4 pt-2" id="hero-cta-buttons-container">
+              {/* Primary Actions */}
+              <div className="flex flex-wrap gap-4" id="hero-cta-primary">
+                <button
+                  onClick={() => onNavigateToTab('properti')}
+                  className="bg-[#D4A017] hover:bg-[#B38410] text-white font-extrabold text-sm px-6 py-3.5 rounded-xl transition-all duration-300 shadow-md transform hover:-translate-y-0.5 flex items-center gap-2 cursor-pointer"
+                  id="hero-btn-properties"
+                >
+                  Lihat Property
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+                
+                <button
+                  onClick={onOpenConsultation}
+                  className="bg-white/10 hover:bg-white/20 border border-white/25 text-white font-bold text-sm px-6 py-3.5 rounded-xl transition duration-300 shadow flex items-center gap-2 cursor-pointer"
+                  id="hero-btn-consultation"
+                >
+                  <PhoneCall className="h-4 w-4 text-[#D4A017]" />
+                  Konsultasi Gratis
+                </button>
+              </div>
 
-              <button
-                onClick={() => onNavigateToTab('titip-jual')}
-                className="bg-transparent hover:bg-white/10 border-2 border-dashed border-[#D4A017] text-[#D4A017] hover:text-white font-bold text-sm px-6 py-3.5 rounded-xl transition duration-300 flex items-center gap-2 cursor-pointer"
-                id="hero-btn-titip"
-              >
-                Titip Jual Property
-              </button>
+              {/* Secondary Actions (Titip Services) */}
+              <div className="flex flex-wrap gap-3" id="hero-cta-secondary">
+                <button
+                  onClick={() => onNavigateToTab('titip-jual')}
+                  className="bg-transparent hover:bg-white/10 border-2 border-dashed border-[#D4A017] text-[#D4A017] hover:text-white font-bold text-sm px-6 py-3.5 rounded-xl transition duration-300 flex items-center gap-2 cursor-pointer"
+                  id="hero-btn-titip"
+                >
+                  Titip Jual Property
+                </button>
+
+                <button
+                  onClick={() => onNavigateToTab('titip-cari')}
+                  className="bg-transparent hover:bg-white/10 border-2 border-dashed border-[#D4A017] text-[#D4A017] hover:text-white font-bold text-sm px-6 py-3.5 rounded-xl transition duration-300 flex items-center gap-2 cursor-pointer"
+                  id="hero-btn-titip-cari"
+                >
+                  Titip Cari Property
+                </button>
+              </div>
             </div>
           </div>
 
@@ -412,7 +426,7 @@ export default function Beranda({ onNavigateToTab, onOpenConsultation, propertie
                   <img
                     src={finalFounderPhoto}
                     alt="Hadi Agen"
-                    className="rounded-2xl object-cover h-72 w-full shadow-inner"
+                    className="rounded-2xl object-cover object-top h-72 w-full shadow-inner"
                   />
                   <div className="text-center pt-4">
                     <p className="text-sm font-black text-[#0F172A]">{settings?.founderName || "Hadi Sukmono"}</p>

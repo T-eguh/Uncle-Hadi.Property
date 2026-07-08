@@ -77,7 +77,7 @@ export default function KontakSection({ settings }: KontakSectionProps) {
             Hubungi Uncle Hadi Sekarang
           </h2>
           <p className="mt-3 text-base text-gray-500 max-w-2xl mx-auto">
-            Kami siap melayani kebutuhan konsultasi jual beli rumah, KPR, titip jual unit property, atau investasi di Bekasi dan Jakarta Timur kapan pun Anda butuhkan.
+            Kami siap melayani kebutuhan konsultasi jual beli rumah, KPR, titip jual unit property, atau investasi di Bekasi, Jakarta Timur, dan Jakarta Utara kapan pun Anda butuhkan.
           </p>
         </div>
 
@@ -140,7 +140,7 @@ export default function KontakSection({ settings }: KontakSectionProps) {
               <div className="bg-slate-50 border border-gray-100 rounded-2xl p-4 text-center space-y-2">
                 <Globe className="h-8 w-8 text-blue-500 mx-auto" />
                 <h4 className="text-xs font-bold text-[#0F172A]">Area Kerja Utama</h4>
-                <p className="text-3xs text-gray-400">Bekasi (Timur, Barat, Utara, Selatan), Cikarang, Tambun, Karawang, dan Jakarta Timur.</p>
+                <p className="text-2xs text-gray-500 font-medium">Bekasi, Jakarta Timur, dan Jakarta Utara</p>
                 <a
                   href={`https://maps.google.com/?q=${encodeURIComponent(address)}`}
                   target="_blank"

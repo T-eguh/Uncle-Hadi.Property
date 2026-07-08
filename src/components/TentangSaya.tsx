@@ -11,11 +11,9 @@ export default function TentangSaya({ onOpenConsultation, onNavigateToTab, setti
   const defaultPhoto = "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=300&h=300&q=80";
   const finalFounderPhoto = settings?.founderPhotoUrl || defaultPhoto;
   const workAreas = [
-    { name: 'Bekasi Barat', detail: 'Dekat dengan Jakarta Timur, pertumbuhan komersial pesat.' },
-    { name: 'Bekasi Timur', detail: 'Kawasan residensial asri, dekat KRL & LRT Bekasi.' },
-    { name: 'Cikarang', detail: 'Pusat industri terbesar se-Asia Tenggara, ROI sewa tinggi.' },
-    { name: 'Jakarta Timur', detail: 'Akses premium, dekat koridor MRT & LRT, sangat dinamis.' },
-    { name: 'Karawang', detail: 'Kawasan industri baru dengan prospek investasi masa depan.' },
+    { name: 'Bekasi', detail: 'Meliputi Bekasi Timur, Barat, Utara, Selatan, Cikarang, Tambun, dan sekitarnya.' },
+    { name: 'Jakarta Timur', detail: 'Kawasan residensial & komersial strategis dekat koridor LRT & MRT.' },
+    { name: 'Jakarta Utara', detail: 'Kawasan komersial pesat, area hunian eksklusif dengan perkembangan infrastruktur masif.' },
   ];
 
   const certifications = [
@@ -50,11 +48,11 @@ export default function TentangSaya({ onOpenConsultation, onNavigateToTab, setti
               <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4A017]/5 rounded-full -mr-10 -mt-10"></div>
               
               {/* Profile Image (Simulated professional avatar) */}
-              <div className="w-44 h-44 rounded-full border-4 border-[#D4A017] overflow-hidden shadow-lg mb-6 relative">
+              <div className="w-44 h-44 rounded-full border-4 border-[#D4A017] overflow-hidden shadow-lg mb-6 relative bg-white flex items-center justify-center p-1">
                 <img
                   src={finalFounderPhoto}
                   alt={`${settings?.founderName || "Hadi"} - Uncle Hadi.Property`}
-                  className="w-full h-full object-cover"
+                  className="rounded-full w-full h-full object-cover object-top"
                 />
               </div>
 
@@ -136,7 +134,7 @@ export default function TentangSaya({ onOpenConsultation, onNavigateToTab, setti
             <h3 className="text-2xl font-extrabold text-[#0F172A]">Area Kerja Utama</h3>
             <p className="text-xs text-gray-400 mt-1">Kami sangat menguasai geografi, harga pasar wajar, dan potensi perkembangan di wilayah berikut:</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {workAreas.map((area, idx) => (
               <div key={idx} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
                 <div className="w-8 h-8 bg-[#D4A017]/10 text-[#AA7C11] rounded-lg flex items-center justify-center mb-3">

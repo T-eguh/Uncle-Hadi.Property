@@ -73,10 +73,23 @@ export default function PropertyCatalog({
     const list = (properties !== null && properties !== undefined) ? properties : PROPERTIES_DATA;
     let result = list.filter((prop) => {
       // Search text match
+      const searchLower = searchTerm.toLowerCase();
       const matchesSearch = 
-        prop.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        prop.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        prop.description.toLowerCase().includes(searchTerm.toLowerCase());
+        prop.title.toLowerCase().includes(searchLower) ||
+        prop.location.toLowerCase().includes(searchLower) ||
+        prop.description.toLowerCase().includes(searchLower) ||
+        prop.type.toLowerCase().includes(searchLower) ||
+        prop.category.toLowerCase().includes(searchLower) ||
+        (prop.landArea && prop.landArea.toLowerCase().includes(searchLower)) ||
+        (prop.buildingArea && prop.buildingArea.toLowerCase().includes(searchLower)) ||
+        (prop.furnished && prop.furnished.toLowerCase().includes(searchLower)) ||
+        (prop.facing && prop.facing.toLowerCase().includes(searchLower)) ||
+        (prop.electricity && prop.electricity.toLowerCase().includes(searchLower)) ||
+        (prop.water && prop.water.toLowerCase().includes(searchLower)) ||
+        (prop.streetWidth && prop.streetWidth.toLowerCase().includes(searchLower)) ||
+        (prop.rooms && prop.rooms.toString().includes(searchLower)) ||
+        (prop.bathrooms && prop.bathrooms.toString().includes(searchLower)) ||
+        (prop.floors && prop.floors.toString().includes(searchLower));
 
       // Category match
       const matchesCategory = selectedCategory === 'all' || prop.category === selectedCategory;
@@ -211,7 +224,7 @@ export default function PropertyCatalog({
 
             {/* Tipe Jual (Purpose) */}
             <div id="filter-purpose-col">
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Tipe Jual</label>
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Jenis Pembelian / Sewa</label>
               <select
                 value={selectedPurpose}
                 onChange={(e) => setSelectedPurpose(e.target.value)}
